@@ -98,7 +98,7 @@ if (KEYDOWN(VK_ESCAPE))
 memset(&ddsd,0,sizeof(ddsd)); 
 ddsd.dwSize = sizeof(ddsd);
 
-if (FAILED(lpddsprimary->Lock(NULL, &ddsd,
+if (FAILED(lpddsback->Lock(NULL, &ddsd,
                    DDLOCK_SURFACEMEMORYPTR | DDLOCK_WAIT,
                    NULL)))
    {
@@ -107,25 +107,32 @@ if (FAILED(lpddsprimary->Lock(NULL, &ddsd,
    } // end if
 int mempitch        = (int)ddsd.lPitch;
 UCHAR *video_buffer = (UCHAR *)ddsd.lpSurface;
-RECT client;
-GetWindowRect(main_window_handle,&client);
 // plot 1000 random pixels with random colors on the
 // primary surface, they will be instantly visible
-for (int index=0; index < 1000; index++)
+static int a = 0;
+a++;
+for (int index=0; index < 500; index++)
     {
+		
+		a = a==300?0:a;
     // select random position and color for 640x480x8
     unsigned int color = _RGB32BIT(255,rand()%256,rand()%256,rand()%256);
-	if(client.right == client.left)return 0;
-    int x =  rand()%(client.right - client.left) + client.left;
-    int y =  rand()%(client.bottom - client.top) + client.top;
+    int x =  index%SCREEN_WIDTH;
+    int y =  a;
     // plot the pixel
-    ((unsigned int*)video_buffer)[x+y*mempitch/4] = color;        
+	if(mempitch == 0){
+		((unsigned int*)video_buffer)[x+y*500/4] = color; 
+	}else{
+		((unsigned int*)video_buffer)[x+y*mempitch/4] = color;  
+	}
+
+          
     } // end for index
 
 // now unlock the primary surface
-if (FAILED(lpddsprimary->Unlock(NULL)))
+if (FAILED(lpddsback->Unlock(NULL)))
    return(0);
-
+lpddsprimary->Flip(NULL,DDFLIP_WAIT);
 // sleep a bit
 Sleep(30);
 
@@ -168,50 +175,59 @@ return(1);
 
 // WINMAIN ////////////////////////////////////////////////
 
-//int WINAPI WinMain(	HINSTANCE hinstance,
-//					HINSTANCE hprevinstance,
-//					LPSTR lpcmdline,
-//					int ncmdshow)
-//{
-//HWND	   hwnd;	 // generic window handle
-//MSG		   msg;		 // generic message
-//HDC        hdc;      // graphics device context
-//// save hinstance in global
-//hinstance_app = hinstance;
-//
-//if (!(hwnd = init.createWindow(hinstance,WindowProc,640,480)))	// extra creation parms
+int WINAPI WinMain(	HINSTANCE hinstance,
+					HINSTANCE hprevinstance,
+					LPSTR lpcmdline,
+					int ncmdshow)
+{
+HWND	   hwnd;	 // generic window handle
+MSG		   msg;		 // generic message
+HDC        hdc;      // graphics device context
+// save hinstance in global
+hinstance_app = hinstance;
+
+//if (!(hwnd = init.createWindow(hinstance,WindowProc,SCREEN_WIDTH,SCREEN_HEIGHT)))	// extra creation parms
 //return(0);
 //main_window_handle = hwnd;
-//init.initDDraw(&lpdd,main_window_handle,DDSCL_NORMAL,&ddsd,&lpddsprimary);
-//// enter main event loop
-//while(TRUE)
-//	{
-//    // test if there is a message in queue, if so get it
-//	if (PeekMessage(&msg,NULL,0,0,PM_REMOVE))
-//	   { 
-//	   // test if this is a quit
-//       if (msg.message == WM_QUIT)
-//           break;
-//	
-//	   // translate any accelerator keys
-//	   TranslateMessage(&msg);
-//
-//	   // send the message to the window proc
-//	   DispatchMessage(&msg);
-//	   } // end if
-//    
-//       // main game processing goes here
-//       Game_Main();
-//       
-//	} // end while
-//
-//// closedown game here
-//Game_Shutdown();
-//
-//// return to Windows like this
-//return(msg.wParam);
-//
-//} // end WinMain
+//init.initDDraw(&lpdd,main_window_handle,DDSCL_FULLSCREEN | DDSCL_ALLOWMODEX | 
+//	DDSCL_EXCLUSIVE | DDSCL_ALLOWREBOOT,&ddsd,&lpddsprimary,&lpddsback);
+
+
+init.lp_canva = new Canvas();
+init.lp_canva->init(hinstance,WindowProc,SCREEN_WIDTH,SCREEN_HEIGHT,SCREEN_BPP,0);
+lpdd = init.lp_canva->lp_directdraw;
+lpddsprimary = init.lp_canva->lp_primary_surface;
+lpddsback = init.lp_canva->lp_back_surface;
+
+main_window_handle = init.lp_canva->main_handler;
+while(TRUE)
+	{
+    // test if there is a message in queue, if so get it
+	if (PeekMessage(&msg,NULL,0,0,PM_REMOVE))
+	   { 
+	   // test if this is a quit
+       if (msg.message == WM_QUIT)
+           break;
+	
+	   // translate any accelerator keys
+	   TranslateMessage(&msg);
+
+	   // send the message to the window proc
+	   DispatchMessage(&msg);
+	   } // end if
+    
+       // main game processing goes here
+       Game_Main();
+       
+	} // end while
+
+// closedown game here
+Game_Shutdown();
+
+// return to Windows like this
+return(msg.wParam);
+
+} // end WinMain
 
 ///////////////////////////////////////////////////////////
 

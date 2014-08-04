@@ -9,58 +9,7 @@ int InitD3D::add(int a,int b){
 	return a+b;
 }
 
-//LRESULT CALLBACK WindowProc(HWND hwnd, 
-//	UINT msg, 
-//	WPARAM wparam, 
-//	LPARAM lparam)
-//{
-//	// this is the main message handler of the system
-//	PAINTSTRUCT		ps;		// used in WM_PAINT
-//	HDC				hdc;	// handle to a device context
-//	char buffer[80];        // used to print strings
-//
-//	// what is the message 
-//	switch(msg)
-//	{	
-//	case WM_CREATE: 
-//		{
-//			// do initialization stuff here
-//			// return success
-//			return(0);
-//		} break;
-//
-//	case WM_PAINT: 
-//		{
-//			// simply validate the window 
-//			hdc = BeginPaint(hwnd,&ps);	 
-//
-//			// end painting
-//			EndPaint(hwnd,&ps);
-//
-//			// return success
-//			return(0);
-//		} break;
-//
-//	case WM_DESTROY: 
-//		{
-//
-//			// kill the application, this sends a WM_QUIT message 
-//			PostQuitMessage(0);
-//
-//			// return success
-//			return(0);
-//		} break;
-//
-//	default:break;
-//
-//	} // end switch
-//
-//	// process any messages that we didn't take care of 
-//	return (DefWindowProc(hwnd, msg, wparam, lparam));
-//
-//} // end WinProc
-
-HWND InitD3D::createWindow(HINSTANCE hinstance,WNDPROC callback,int width,int height){
+HWND InitD3D::createWindow(HINSTANCE hinstance,WNDPROC callback,int width,int height,int windowed){
 	WNDCLASSEX winclass; // this will hold the class we create
 	// first fill in the window class stucture
 	winclass.cbSize         = sizeof(WNDCLASSEX);
@@ -79,19 +28,42 @@ HWND InitD3D::createWindow(HINSTANCE hinstance,WNDPROC callback,int width,int he
 
 	if (!RegisterClassEx(&winclass))
 		return(0);
-	return CreateWindowEx(NULL,                  // extended style
-		WINDOW_CLASS_NAME,     // class
-		"DirectDraw Full-Screen Demo", // title
-		WS_OVERLAPPED | WS_VISIBLE,
-		0,0,	  // initial x,y
-		width,height,  // initial width, height
-		NULL,	  // handle to parent 
-		NULL,	  // handle to menu
-		hinstance,// instance of this application
-		NULL);
+	if (windowed)
+	{
+		return CreateWindowEx(NULL,                  // extended style
+	WINDOW_CLASS_NAME,     // class
+	"DirectDraw Full-Screen Demo", // title
+	WS_OVERLAPPED | WS_VISIBLE,
+	0,0,	  // initial x,y
+	width,height,  // initial width, height
+	NULL,	  // handle to parent 
+	NULL,	  // handle to menu
+	hinstance,// instance of this application
+	NULL);
+	}else{
+		return CreateWindowEx(NULL,                  // extended style
+			WINDOW_CLASS_NAME,     // class
+			"DirectDraw Full-Screen Demo", // title
+			WS_POPUP | WS_VISIBLE,
+			0,0,	  // initial x,y
+			width,height,  // initial width, height
+			NULL,	  // handle to parent 
+			NULL,	  // handle to menu
+			hinstance,// instance of this application
+			NULL);
+	}
+	
 }
 
-int InitD3D::initDDraw(LPDIRECTDRAW7* lpdd,HWND handler,DWORD type,DDSURFACEDESC2* ddsd,LPDIRECTDRAWSURFACE7* lpsurface){
+//int InitD3D::initDDraw_v2(HWND handler,int width,int height,int bpp,int windowed){
+//	lp_canva->reset();
+//	lp_canva->getDevice(handler,width,height,bpp,windowed);
+//	return 1;
+//}
+
+int InitD3D::initDDraw(LPDIRECTDRAW7* lpdd,HWND handler,DWORD type,DDSURFACEDESC2* ddsd,LPDIRECTDRAWSURFACE7* lpsurface,LPDIRECTDRAWSURFACE7* lpsurfaceb_back){
+	memset(ddsd,0,sizeof(*ddsd));
+	ddsd->dwSize = sizeof(*ddsd);
 	if (FAILED(DirectDrawCreateEx(NULL,(LPVOID*)lpdd,IID_IDirectDraw7,NULL)))
 	{
 		return 0;
@@ -99,18 +71,36 @@ int InitD3D::initDDraw(LPDIRECTDRAW7* lpdd,HWND handler,DWORD type,DDSURFACEDESC
 	if(FAILED((*lpdd)->SetCooperativeLevel(handler,type))){
 		return 0;
 	}
-	memset(ddsd,0,sizeof(*ddsd));
-	ddsd->dwSize = sizeof(*ddsd);
-	ddsd->dwFlags = DDSD_CAPS;
-	ddsd->ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
+	if (type&DDSCL_FULLSCREEN)
+	{
+		if (FAILED((*lpdd)->SetDisplayMode(SCREEN_WIDTH,SCREEN_HEIGHT,SCREEN_BPP,0,0)))
+		{
+			return 0;
+		}
+	}
+	if (lpsurfaceb_back)
+	{
+		ddsd->dwFlags = DDSD_CAPS|DDSD_BACKBUFFERCOUNT;
+		ddsd->dwBackBufferCount = 1;
+		ddsd->ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE|DDSCAPS_COMPLEX|DDSCAPS_FLIP;
+	}else{
+		ddsd->dwFlags = DDSD_CAPS;
+		ddsd->ddsCaps.dwCaps = DDSCAPS_PRIMARYSURFACE;
+	}	
+	
 	if (FAILED((*lpdd)->CreateSurface(ddsd,lpsurface,NULL)))
 	{
 		return 0;
 	}
-	//if (FAILED((*lpdd)->SetDisplayMode(1366,768,32,0,0)))
-	//{
-	//	return 0;
-	//}
+	if (lpsurfaceb_back)
+	{
+		ddsd->ddsCaps.dwCaps = DDSCAPS_BACKBUFFER;
+		if (FAILED((*lpsurface)->GetAttachedSurface(&(ddsd->ddsCaps),lpsurfaceb_back)))
+		{
+			return 0;
+		}
+	}
+	
 	return 1;
 }
 

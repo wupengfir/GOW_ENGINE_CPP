@@ -27,10 +27,18 @@ $RECYCLE.BIN/
 
 # Icon must ends with two \r.
 Icon
-
+debug/
+ipch/
 # Thumbnails
 ._*
 
 # Files that might appear on external disk
 .Spotlight-V100
 .Trashes
+
+*.sdf
+*.sln
+*.suo
+*.vcxproj
+*.vcxproj
+*.vcxproj
