@@ -36,6 +36,8 @@ int screen_width  = SCREEN_WIDTH,            // width of screen
 
 char buffer[80];                     // general printing buffer
 Canvas *lp_canvas;
+
+bool closed = false;
 // FUNCTIONS //////////////////////////////////////////////
 LRESULT CALLBACK WindowProc(HWND hwnd, 
 						    UINT msg, 
@@ -46,6 +48,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd,
 PAINTSTRUCT		ps;		// used in WM_PAINT
 HDC				hdc;	// handle to a device context
 char buffer[80];        // used to print strings
+
 
 // what is the message 
 switch(msg)
@@ -91,8 +94,14 @@ return (DefWindowProc(hwnd, msg, wparam, lparam));
 
 int Game_Main(void *parms = NULL, int num_parms = 0)
 {
-	if (KEYDOWN(VK_ESCAPE))
+	if (KEYDOWN(VK_ESCAPE)){
 		SendMessage(lp_canvas->main_handler,WM_CLOSE,0,0);
+		closed = true;
+	}		
+	if (closed)
+	{
+		return 1;
+	}
 	lp_canvas->lock();
 	lp_canvas->clear();
 	static int a = 0;
@@ -112,27 +121,6 @@ int Game_Main(void *parms = NULL, int num_parms = 0)
 	return(1);
 
 }
-int Game_Shutdown(void *parms = NULL, int num_parms = 0)
-{
-if (lpddpal)
-   {
-   lpddpal->Release();
-   lpddpal = NULL;
-   } 
-
-if (lpddsprimary)
-   {
-   lpddsprimary->Release();
-   lpddsprimary = NULL;
-   }
-if (lpdd)
-   {
-   lpdd->Release();
-   lpdd = NULL;
-   } 
-return(1);
-
-} 
 
 int WINAPI WinMain(	HINSTANCE hinstance,
 					HINSTANCE hprevinstance,
@@ -143,7 +131,7 @@ int WINAPI WinMain(	HINSTANCE hinstance,
 MSG		   msg;		 // generic message
 lp_canvas->init(hinstance,WindowProc,SCREEN_WIDTH,SCREEN_HEIGHT,SCREEN_BPP,1);
 while(TRUE)
-	{
+	{		
 	if (PeekMessage(&msg,NULL,0,0,PM_REMOVE))
 	   { 
        if (msg.message == WM_QUIT)

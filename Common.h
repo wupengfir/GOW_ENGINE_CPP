@@ -28,7 +28,7 @@
 #define WINDOW_CLASS_NAME "WINCLASS1"
 
 // default screen size
-#define SCREEN_WIDTH    680  // size of screen
+#define SCREEN_WIDTH    640  // size of screen
 #define SCREEN_HEIGHT   480
 #define SCREEN_BPP      32    // bits per pixel
 #define MAX_COLORS      256  // maximum colors

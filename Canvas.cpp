@@ -196,6 +196,9 @@ void Canvas::getDevice(){
 Canvas::~Canvas(void)
 {
 	releaseT(lp_primary_surface);
-	releaseT(lp_back_surface);
+	if (is_window)
+	{
+		releaseT(lp_back_surface);
+	}	
 	releaseT(lp_directdraw);
 }
