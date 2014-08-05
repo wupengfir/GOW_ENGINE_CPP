@@ -181,7 +181,8 @@ void Canvas::getDevice(){
 	if(is_window){
 		DD_INIT_STRUCT(ddsd);
 		ddsd.dwFlags = DDSD_CAPS | DDSD_WIDTH | DDSD_HEIGHT;
-		ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_SYSTEMMEMORY;
+		//这里用DDSCAPS_VIDEOMEMORY不会闪烁，用DDSCAPS_SYSTEMMEMORY的话可能会闪烁
+		ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_VIDEOMEMORY;
 		ddsd.dwWidth = width;
 		ddsd.dwHeight = height;
 		lp_directdraw->CreateSurface(&ddsd,&lp_back_surface,NULL);
