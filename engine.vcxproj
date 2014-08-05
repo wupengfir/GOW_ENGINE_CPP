@@ -39,9 +39,10 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(IncludePath);D:\Program Files\DXSDK8\include</IncludePath>
-    <ReferencePath>D:\Program Files\DXSDK8\lib;$(ReferencePath)</ReferencePath>
-    <LibraryPath>D:\Program Files\DXSDK8\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath);D:\Visual_Studio_Workplace\DX_SDK\include</IncludePath>
+    <ReferencePath>D:\Visual_Studio_Workplace\DX_SDK\lib;$(ReferencePath)</ReferencePath>
+    <LibraryPath>D:\Visual_Studio_Workplace\DX_SDK\lib;$(LibraryPath)</LibraryPath>
+    <EmbedManifest>false</EmbedManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -77,13 +78,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="demo6_3.cpp" />
-    <ClCompile Include="InitD3D.cpp" />
-    <ClCompile Include="Point2d.cpp" />
+    <ClCompile Include="Canvas.cpp" />
+    <ClCompile Include="demo6_4.cpp" />
+    <ClCompile Include="GraphicFunctions.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="InitD3D.h" />
-    <ClInclude Include="Point2d.h" />
+    <ClInclude Include="Canvas.h" />
+    <ClInclude Include="Common.h" />
+    <ClInclude Include="Geometry.h" />
+    <ClInclude Include="GraphicFunctions.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
