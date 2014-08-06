@@ -94,6 +94,7 @@ return (DefWindowProc(hwnd, msg, wparam, lparam));
 
 int Game_Main(void *parms = NULL, int num_parms = 0)
 {
+	Matrix m(44);
 	if (KEYDOWN(VK_ESCAPE)){
 		SendMessage(lp_canvas->main_handler,WM_CLOSE,0,0);
 		closed = true;
@@ -112,8 +113,17 @@ int Game_Main(void *parms = NULL, int num_parms = 0)
 		unsigned int color = _RGB32BIT(rand()%256,rand()%256,rand()%256,rand()%256);
 		int x =  rand()%SCREEN_WIDTH*2 - SCREEN_WIDTH;
 		int y =  rand()%SCREEN_HEIGHT*2 - SCREEN_HEIGHT;//a;
+		Point2d p1;
+		Point2d p2;
+		p1.M[0] = x;
+		p1.M[1] = y;
+		p2.M[0] = rand()%SCREEN_WIDTH;
+		p2.M[1] = rand()%SCREEN_HEIGHT;
 		//lp_canvas->plotPixel(x,y,color);     
-		drawLine(x,y,rand()%SCREEN_WIDTH,rand()%SCREEN_HEIGHT,color);
+		//drawLine(x,y,rand()%SCREEN_WIDTH,rand()%SCREEN_HEIGHT,color);
+		drawLine(p1.x,p1.y,p2.x,p1.y,color);
+
+		//drawLine(396,-50,694,-50,color);
 	}
 	lp_canvas->unlock();
 	lp_canvas->flip();

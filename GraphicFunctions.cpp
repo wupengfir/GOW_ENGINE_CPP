@@ -1,7 +1,10 @@
 #include "GraphicFunctions.h"
 int drawLine(int x0, int y0, int x1, int y1, UINT color)
 {
-	Clip_Line(x0,y0,x1,y1);
+	if (!Clip_Line(x0,y0,x1,y1))
+	{
+		return 0;
+	}	
 	int x, y, dx, dy, dx2, dy2, xstep, ystep, error, index;
 	x = x0;
 	y = y0;

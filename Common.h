@@ -11,16 +11,20 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
-#include <string.h>
+#include <string>
 #include <stdarg.h>
 #include <stdio.h> 
 #include <math.h>
 #include <io.h>
 #include <fcntl.h>
-
+#include <vector>
 #include <ddraw.h> // include directdraw
+
+
 #include "Canvas.h"
 #include "GraphicFunctions.h"
+#include "Geometry.h"
+
 #pragma comment(lib,"ddraw.lib")
 // DEFINES ////////////////////////////////////////////////
 
@@ -47,6 +51,7 @@ typedef unsigned char  BYTE;
 #define KEYUP(vk_code)   ((GetAsyncKeyState(vk_code) & 0x8000) ? 0 : 1)
 #define _RGB32BIT(a,r,g,b) ((b) + ((g) << 8) + ((r) << 16) + ((a) << 24))
 #define DD_INIT_STRUCT(ddstruct) { memset(&ddstruct,0,sizeof(ddstruct)); ddstruct.dwSize=sizeof(ddstruct); }
+
 
 extern int min_clip_x,                             // clipping rectangle 
 	max_clip_x,
