@@ -25,6 +25,7 @@
 #include "GraphicFunctions.h"
 #include "Geometry.h"
 
+
 #pragma comment(lib,"ddraw.lib")
 // DEFINES ////////////////////////////////////////////////
 
