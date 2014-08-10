@@ -84,7 +84,13 @@ public:
 			float z;
 			float w;
 		};
-	};		
+	};	
+	inline void init(int vx,int vy,int vz,int vw = 1){
+		x = vx;
+		y = vy;
+		z = vz;
+		w = vw;
+	};
 };
 
 class Vector3d 
@@ -98,7 +104,30 @@ public:
 			float z;
 			float w;
 		};
-	};		
+	};	
+	inline void init(int vx,int vy,int vz,int vw = 1){
+		x = vx;
+		y = vy;
+		z = vz;
+		w = vw;
+	};
+
+	inline void cross(Vector3d* target,Vector3d* storage){
+		storage->x = y*target->z-z*target->y;
+		storage->y = target->x*z - x*target->z;
+		storage->z = x*target->y - y*target->x;
+	};
+
+	inline void build(Point3d* source,Point3d* target){
+		x = target->x - source->x;
+		y = target->y - source->y;
+		z = target->z - source->z;
+	};
+
+	inline float pointMultiply(Vector3d* target){
+		return x*target->x + y*target->y + z*target->z;
+	};
+
 };
 
 class Vertex3d{
@@ -241,7 +270,7 @@ public:
 	int state;
 	int attr;
 	int num_polys;
-	std::vector<Poly> polys;
+	std::vector<Poly*> polys;
 };
 
 class Matrix{

@@ -48,6 +48,8 @@ typedef unsigned char  BYTE;
 
 // MACROS /////////////////////////////////////////////////
 
+#define PI 3.14159
+#define DEG_TO_RAD(a) (a/180*PI)
 #define KEYDOWN(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 1 : 0)
 #define KEYUP(vk_code)   ((GetAsyncKeyState(vk_code) & 0x8000) ? 0 : 1)
 #define _RGB32BIT(a,r,g,b) ((b) + ((g) << 8) + ((r) << 16) + ((a) << 24))
@@ -69,3 +71,4 @@ void releaseT(T a)
 	a->Release();
 	a = NULL;
 } 
+

@@ -1,37 +1,9 @@
-// DEMO6_3.CPP basic full-screen pixel plotting DirectDraw demo
-
-// INCLUDES ///////////////////////////////////////////////
-
-
 #include "Common.h"
-// GLOBALS ////////////////////////////////////////////////
 
-
-// directdraw stuff
-
-LPDIRECTDRAW7         lpdd         = NULL;   // dd object
-LPDIRECTDRAWSURFACE7  lpddsprimary = NULL;   // dd primary surface
-LPDIRECTDRAWSURFACE7  lpddsback    = NULL;   // dd back surface
-LPDIRECTDRAWPALETTE   lpddpal      = NULL;   // a pointer to the created dd palette
 LPDIRECTDRAWCLIPPER   lpddclipper  = NULL;   // dd clipper
-PALETTEENTRY          palette[256];          // color palette
-PALETTEENTRY          save_palette[256];     // used to save palettes
-DDSURFACEDESC2        ddsd;                  // a direct draw surface description struct
 DDBLTFX               ddbltfx;               // used to fill
-DDSCAPS2              ddscaps;               // a direct draw surface capabilities struct
 HRESULT               ddrval;                // result back from dd calls
 DWORD                 start_clock_count = 0; // used for timing
-
-// these defined the general clipping rectangle
-int min_clip_x = 0,                          // clipping rectangle 
-    max_clip_x = 0,
-    min_clip_y = 0,
-    max_clip_y = 0;
-
-// these are overwritten globally by DD_Init()
-int screen_width  = SCREEN_WIDTH,            // width of screen
-    screen_height = SCREEN_HEIGHT,           // height of screen
-    screen_bpp    = SCREEN_BPP;              // bits per pixel
 
 
 char buffer[80];                     // general printing buffer

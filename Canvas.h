@@ -30,7 +30,7 @@ public:
 	~Canvas(void);
 
 	inline void plotPixel(int x,int y,UINT color){
-		((UINT*)lp_backbuffer)[x+y*lpitch/4] = color; 
+		((UINT*)lp_backbuffer)[x+((y*lpitch)>>2)] = color; 
 	}
 
 };

@@ -44,4 +44,17 @@ public:
 	  Matrix mper;
 	//相机从透视坐标到屏幕坐标变换矩阵
 	  Matrix mscr;
+
+	  Camera(void);
+	  void init(int attr,Point3d cam_pos,Vector3d cam_dir,Point3d cam_target,
+float nearZ,float farZ,float fov,float viewW,float viewH);
+
+	  void buildWorldToCameraMatrix_Euler();
+	  void buildWorldToCameraMatrix_unv(int mode);
+	  void removeBackFaceOfObj(Object3d *obj);
+	  void cameraToPerspective_renderlist(RenderList *list);
+	  void cameraToPerspective_object(Object3d *obj);
+	  void cullObject(Object3d* obj,int type = CULL_XYZ);
+	  void perspectiveToScreen_renderlist(RenderList* list);
+	  void perspectiveToScreen_object(Object3d *obj);
 };
