@@ -1,6 +1,10 @@
-#include "Render.h"
-
+#include "Geometry.h"
 Camera::Camera():mcam(44),mper(44),mscr(44){
+
+};
+
+Camera::~Camera()
+{
 
 };
 
@@ -134,7 +138,7 @@ void Camera::removeBackFaceOfObj(Object3d *obj){
 			lp_p++;
 			continue;
 		}
-		view_vector.build(&(lp_p->vlist_trans[0].pos),&pos);
+		view_vector.build(&(lp_p->lp_vertex_object[lp_p->v_index_list[0]].pos),&pos);
 		lp_p->calculateNormalVector();
 		float temp = view_vector.pointMultiply(&lp_p->normal_vector);
 		if (temp > 0)
@@ -159,9 +163,9 @@ void Camera::cameraToPerspective_renderlist(RenderList *list){
 		{
 			for (int i = 0;i<3;i++)
 			{
-				float tz = lp_p->vlist_trans[i].z;
-				lp_p->vlist_trans[i].x *= view_dist/tz;
-				lp_p->vlist_trans[i].y *= view_dist*aspect_radio/tz;
+				float tz = lp_p->lp_vertex_object[lp_p->v_index_list[i]].z;
+				lp_p->lp_vertex_object[lp_p->v_index_list[i]].x *= view_dist/tz;
+				lp_p->lp_vertex_object[lp_p->v_index_list[i]].y *= view_dist*aspect_radio/tz;
 			}
 		}
 	}
@@ -215,8 +219,8 @@ void Camera::perspectiveToScreen_renderlist(RenderList* list){
 		{			
 			for (int i = 0;i<3;i++)
 			{
-				lp_p->vlist_trans[i].x = a+a*lp_p->vlist_trans[i].x;
-				lp_p->vlist_trans[i].y = b-b*lp_p->vlist_trans[i].y;
+				lp_p->lp_vertex_object[lp_p->v_index_list[i]].x = a+a*lp_p->lp_vertex_object[lp_p->v_index_list[i]].x;
+				lp_p->lp_vertex_object[lp_p->v_index_list[i]].y = b-b*lp_p->lp_vertex_object[lp_p->v_index_list[i]].y;
 			}
 		}
 	}

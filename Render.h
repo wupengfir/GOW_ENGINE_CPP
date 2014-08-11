@@ -1,4 +1,16 @@
+#pragma once
 #include "Common.h"
+#include "Geometry.h"
+
+class Point2d;
+class Point3d;
+class Vector3d;
+class Vertex3d;
+class Poly;
+class Plane3d;
+class Object3d;
+class RenderList;
+class Matrix;
 
 class Camera{
 public:
@@ -46,6 +58,7 @@ public:
 	  Matrix mscr;
 
 	  Camera(void);
+	  ~Camera(void);
 	  void init(int attr,Point3d cam_pos,Vector3d cam_dir,Point3d cam_target,
 float nearZ,float farZ,float fov,float viewW,float viewH);
 

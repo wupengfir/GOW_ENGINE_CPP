@@ -1,6 +1,5 @@
 #pragma once
 #include "Common.h"
-
 #define ALMOST_ZERO						0.00001
 
 #define RENDERLISTD_MAX_POLYS			8192
@@ -54,12 +53,15 @@
 
 #define SWAP(a,b,t) {t=a; a=b; b=t;}
 
+
 class Vector3d;
+class Object3d;
+class Matrix;
 inline void vector3dCopy(Vector3d* vdst, Vector3d* vsrc);
 inline void vector3dInit(Vector3d* vdst);
 inline float vector3dLengthFast(Vector3d* va);
 inline void normalizeVector3d(Vector3d* v);
-
+void transformObject(Object3d* obj,Matrix* m,int type,bool transform_basis);
 
 class Point2d 
 {
@@ -85,12 +87,26 @@ public:
 			float w;
 		};
 	};	
-	inline void init(int vx,int vy,int vz,int vw = 1){
+	inline void init(float vx,float vy,float vz,float vw = 1){
 		x = vx;
 		y = vy;
 		z = vz;
 		w = vw;
 	};
+
+	inline void add(Point3d* target,Point3d* storage){
+		storage->x = x + target->x;
+		storage->y = y + target->y;
+		storage->z = z + target->z;
+	};
+
+	inline void copy(Point3d *source){
+		x = source->x;
+		y = source->y;
+		z = source->z;
+		w = source->w;
+	}
+
 };
 
 class Vector3d 
@@ -105,7 +121,7 @@ public:
 			float w;
 		};
 	};	
-	inline void init(int vx,int vy,int vz,int vw = 1){
+	inline void init(float vx,float vy,float vz,float vw = 1){
 		x = vx;
 		y = vy;
 		z = vz;
@@ -127,6 +143,13 @@ public:
 	inline float pointMultiply(Vector3d* target){
 		return x*target->x + y*target->y + z*target->z;
 	};
+
+	inline void copy(Vector3d *source){
+		x = source->x;
+		y = source->y;
+		z = source->z;
+		w = source->w;
+	}
 
 };
 
@@ -163,11 +186,13 @@ public:
 
 	Vector3d normal_vector;
 
-	Vertex3d vlist_local[3];
-	Vertex3d vlist_trans[3];
+	Vertex3d* lp_vertex_object;
+
+	int v_index_list[3];
 
 	Poly(){
 		state = POLY4D_STATE_ACTIVE;
+		attr = 0;
 	}
 
 	inline bool avaliable(){
@@ -177,20 +202,20 @@ public:
 	};
 
 	inline void calculateAvgZ(){
-		avg_z = (vlist_trans[0].z+vlist_trans[1].z+vlist_trans[2].z)/3;
+		avg_z = (lp_vertex_object[v_index_list[0]].z+lp_vertex_object[v_index_list[1]].z+lp_vertex_object[v_index_list[2]].z)/3;
 	}
 
 	inline void calculateNormalVector(){
 
-		float x1 = vlist_trans[1].x-vlist_trans[0].x;
-		float y1 = vlist_trans[1].y-vlist_trans[0].y;
-		float z1 = vlist_trans[1].z-vlist_trans[0].z;
+		float x1 = lp_vertex_object[v_index_list[1]].x-lp_vertex_object[v_index_list[0]].x;
+		float y1 = lp_vertex_object[v_index_list[1]].y-lp_vertex_object[v_index_list[0]].y;
+		float z1 = lp_vertex_object[v_index_list[1]].z-lp_vertex_object[v_index_list[0]].z;
 		Vector3d u;
 		u.x = x1;u.y = y1;u.z = z1;
 
-		float x2 = vlist_trans[2].x-vlist_trans[0].x;
-		float y2 = vlist_trans[2].y-vlist_trans[0].y;
-		float z2 = vlist_trans[2].z-vlist_trans[0].z;
+		float x2 = lp_vertex_object[v_index_list[2]].x-lp_vertex_object[v_index_list[0]].x;
+		float y2 = lp_vertex_object[v_index_list[2]].y-lp_vertex_object[v_index_list[0]].y;
+		float z2 = lp_vertex_object[v_index_list[2]].z-lp_vertex_object[v_index_list[0]].z;
 		Vector3d v;
 		v.x = x2;v.y = y2;v.z = z2;
 
@@ -229,6 +254,9 @@ public:
 	int curr_frame;
 	int num_polys;
 
+	int init_num_polys;
+	int init_num_vertexs;
+
 	Vertex3d* lp_vertex_local;
 	Vertex3d* lp_vertex_trans;
 
@@ -243,6 +271,23 @@ public:
 	int setFrame(int frame);
 	void init(int num_v,int num_p,int num_f);
 
+	inline void toWorldPosition(int type){
+		if (type == TRANSFORM_LOCAL_TO_TRANS)
+		{
+			for (int i = 0;i<num_vertices;i++)
+			{
+				lp_vertex_local[i].pos.add(&world_pos,&(lp_vertex_trans[i].pos));
+			}
+		} 
+		else if(type == TRANSFORM_TRANS_ONLY)
+		{
+			for (int i = 0;i<num_vertices;i++)
+			{
+				lp_vertex_trans[i].pos.add(&world_pos,&(lp_vertex_trans[i].pos));
+			}
+		}
+	};
+
 	inline void addVertex(Vertex3d *v){
 		lp_vertex_local[num_vertices] = *v;
 		lp_vertex_trans[num_vertices] = *v;
@@ -251,12 +296,10 @@ public:
 
 	inline void addPoly(int p1,int p2,int p3){
 		Poly* temp = new Poly;
-		temp->vlist_local[0] = lp_head_vlist_local[p1];
-		temp->vlist_trans[0] = lp_head_vlist_trans[p1];
-		temp->vlist_local[1] = lp_head_vlist_local[p2];
-		temp->vlist_trans[1] = lp_head_vlist_trans[p2];
-		temp->vlist_local[2] = lp_head_vlist_local[p3];
-		temp->vlist_trans[2] = lp_head_vlist_trans[p3];
+		temp->v_index_list[0] = p1;
+		temp->v_index_list[1] = p2;
+		temp->v_index_list[2] = p3;
+		temp->lp_vertex_object = lp_vertex_trans;
 		lp_polys[num_polys] = *temp;
 		num_polys++;
 		delete temp;
@@ -271,6 +314,14 @@ public:
 	int attr;
 	int num_polys;
 	std::vector<Poly*> polys;
+	inline void reset(){
+		num_polys = 0;
+	};
+
+	inline void addPoly(Poly* poly){
+		polys.push_back(poly);
+		num_polys++;
+	}
 };
 
 class Matrix{
@@ -289,6 +340,65 @@ public:
 	~Matrix();
 };
 
+class Camera{
+public:
+	static const int CAMERA_TYPE_EULER = 0;
+	static const int CAMERA_TYPE_UVN = 1;
+
+	int state;
+	int attr; 
+	Point3d pos;
+	Vector3d dir;
+	Vector3d u;
+	Vector3d v;
+	Vector3d n;
+	Point3d target;
+	//焦点视距
+	float view_dist;
+	//视野
+	float fov;
+	//裁剪面
+	float near_clip_z;
+	float far_clip_z;
+
+	Plane3d rt_clip_z;
+	Plane3d lt_clip_z;
+
+	Plane3d tp_clip_z;
+	Plane3d bt_clip_z;
+	//视平面宽高
+	float viewplane_width;
+	float viewplane_height;
+
+	//视口属性
+	float viewport_width;
+	float viewport_height;
+	float viewport_centerX;
+	float viewport_centerY;
+
+	//宽高比
+	float aspect_radio;
+	//相机从世界坐标到相机坐标变换矩阵
+	Matrix mcam;
+	//相机从相机坐标到透视坐标变换矩阵
+	Matrix mper;
+	//相机从透视坐标到屏幕坐标变换矩阵
+	Matrix mscr;
+
+	Camera(void);
+	~Camera(void);
+	void init(int attr,Point3d cam_pos,Vector3d cam_dir,Point3d cam_target,
+		float nearZ,float farZ,float fov,float viewW,float viewH);
+
+	void buildWorldToCameraMatrix_Euler();
+	void buildWorldToCameraMatrix_unv(int mode);
+	void removeBackFaceOfObj(Object3d *obj);
+	void cameraToPerspective_renderlist(RenderList *list);
+	void cameraToPerspective_object(Object3d *obj);
+	void cullObject(Object3d* obj,int type = CULL_XYZ);
+	void perspectiveToScreen_renderlist(RenderList* list);
+	void perspectiveToScreen_object(Object3d *obj);
+};
 
 inline void vector3dCopy(Vector3d* vdst, Vector3d* vsrc)
 { *vdst = *vsrc; };

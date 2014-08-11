@@ -22,9 +22,9 @@
 
 
 #include "Canvas.h"
-#include "GraphicFunctions.h"
-#include "Geometry.h"
-
+//#include "GraphicFunctions.h"
+//#include "Geometry.h"
+//#include "Render.h"
 
 #pragma comment(lib,"ddraw.lib")
 // DEFINES ////////////////////////////////////////////////

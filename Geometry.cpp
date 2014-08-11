@@ -1,4 +1,44 @@
 #include "Geometry.h"
+
+void transformObject(Object3d* obj,Matrix* m,int type,bool transform_basis){
+	int i = 0;
+	Point3d storage;
+	Vector3d result;
+	switch (type)
+	{
+	case TRANSFORM_LOCAL_ONLY:
+		for (i = 0;i<obj->num_vertices;i++)
+		{
+			m->mulPoint3d(&(obj->lp_vertex_local[i].pos),&storage);
+			obj->lp_vertex_local[i].pos.copy(&storage);
+		}
+		break;
+	case TRANSFORM_TRANS_ONLY:
+		for (i = 0;i<obj->num_vertices;i++)
+		{
+			m->mulPoint3d(&(obj->lp_vertex_trans[i].pos),&storage);
+			obj->lp_vertex_trans[i].pos.copy(&storage);
+		}
+		break;
+	case TRANSFORM_LOCAL_TO_TRANS:
+		for (i = 0;i<obj->num_vertices;i++)
+		{
+			m->mulPoint3d(&(obj->lp_vertex_local[i].pos),&storage);
+			obj->lp_vertex_trans[i].pos.copy(&storage);
+		}
+		break;
+	}
+	if (transform_basis)
+	{
+		m->mulVector3d(&(obj->ux),&result);
+		obj->ux.copy(&result);
+		m->mulVector3d(&(obj->uy),&result);
+		obj->uy.copy(&result);
+		m->mulVector3d(&(obj->uz),&result);
+		obj->uz.copy(&result);
+	}
+};
+
 Matrix::Matrix(int type){
 	width = type%10;
 	height = type/10;
@@ -113,8 +153,8 @@ void Object3d::init(int num_v,int num_p,int num_f){
 	lp_head_vlist_trans = lp_vertex_trans;
 
 	num_frame = num_f;
-	//num_vertices = num_vertices;
-	//num_polys = num_polys;
+	init_num_polys = num_p;
+	init_num_vertexs = num_v;
 };
 
 

@@ -1,8 +1,9 @@
 #include "Canvas.h"
 
-
 Canvas::Canvas(void)
 {
+	lp_camera = NULL;
+	renderlist_all = new RenderList();
 }
 
 void Canvas::reset(){
@@ -194,6 +195,75 @@ void Canvas::getDevice(){
 	max_clip_y = height - 1;
 }
 
+void Canvas::setCamera(Camera* camera){
+	this->lp_camera = camera;
+};
+
+void Canvas::addObject(Object3d* obj){
+	this->obj_list.push_back(obj);
+};
+
+void Canvas::addRenderList(RenderList* list){
+	this->renderlist_list.push_back(list);
+};
+
+void Canvas::render(bool backmove,bool cull){
+	int i = 0;
+	if (lp_camera == NULL)
+	{
+		return;
+	}
+	renderlist_all->reset();
+	if(lp_camera->attr == Camera::CAMERA_TYPE_EULER){
+		lp_camera->buildWorldToCameraMatrix_Euler();
+	}else{
+		lp_camera->buildWorldToCameraMatrix_unv(UNV_MODE_SIMPLE);
+	}
+	Object3d *obj;
+	for (std::vector<Object3d*>::size_type s = 0;s!=obj_list.size();s++)
+	{
+		obj = obj_list[s];
+		obj->toWorldPosition(TRANSFORM_LOCAL_TO_TRANS);
+		if (backmove)
+		{
+			lp_camera->removeBackFaceOfObj(obj);
+		}
+		if (cull)
+		{
+			lp_camera->cullObject(obj);
+		}
+		if (obj->state == OBJECT_STATE_CLIPPED)
+		{
+			continue;
+		}
+		transformObject(obj,&(lp_camera->mcam),TRANSFORM_TRANS_ONLY,false);
+		lp_camera->cameraToPerspective_object(obj);
+		lp_camera->perspectiveToScreen_object(obj);
+		Poly* temp;
+		Point3d* p1;Point3d* p2;Point3d* p3;
+		for (i = 0;i<obj->num_polys;i++)
+		{
+			temp = obj->lp_polys + i;
+			if(temp != NULL&&temp->avaliable()){
+				temp->calculateAvgZ();
+				renderlist_all->addPoly(temp);
+			}
+		}
+		for (i = 0;i<renderlist_all->num_polys;i++)
+		{
+			temp = renderlist_all->polys[i];
+			p1 = &((temp->lp_vertex_object[temp->v_index_list[0]]).pos);
+			p2 = &((temp->lp_vertex_object[temp->v_index_list[1]]).pos);
+			p3 = &((temp->lp_vertex_object[temp->v_index_list[2]]).pos);
+			drawLine(p1->x,p1->y,p2->x,p2->y,0xffff0000);
+			drawLine(p2->x,p2->y,p3->x,p3->y,0xffff0000);
+			drawLine(p3->x,p3->y,p1->x,p1->y,0xffff0000);
+		}
+	}
+	
+};
+
+
 Canvas::~Canvas(void)
 {
 	releaseT(lp_primary_surface);
@@ -202,4 +272,5 @@ Canvas::~Canvas(void)
 		releaseT(lp_back_surface);
 	}	
 	releaseT(lp_directdraw);
-}
+	delete lp_camera;
+};
