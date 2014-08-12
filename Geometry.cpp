@@ -130,6 +130,20 @@ Object3d::Object3d(){
 	attr = OBJECT_STATE_ACTIVE|OBJECT_STATE_VISIBLE;
 };
 
+void Object3d::rotationY(float deg){
+	float rad = DEG_TO_RAD(deg - ry);
+	ry = deg;
+	Matrix *mx = new Matrix(44);
+	float cos_t = cos(rad);
+	float sin_t = sin(rad);
+	float y_data[16] = {cos_t,0,-sin_t,0,
+		0,1,0,0,
+		sin_t,0,cos_t,0,
+		0,0,0,1};
+	mx->init(y_data);
+	transformObject(this,mx,TRANSFORM_LOCAL_ONLY,false);
+};
+
 void Object3d::scale(float sx,float sy,float sz){
 	Vertex3d* temp;
 	for (int i = 0;i<num_vertices;i++)

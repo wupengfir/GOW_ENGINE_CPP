@@ -77,19 +77,19 @@ void Camera::buildWorldToCameraMatrix_Euler(){
 	float t_y = dir.y;
 	float t_z = dir.z;
 	float cos_t = cos(t_x);
-	float sin_t = sin(t_x);
+	float sin_t = -sin(t_x);
 	float x_data[16] = {1,0,0,0,
 						0,cos_t,sin_t,0,
 						0,-sin_t,cos_t,0,
 						0,0,0,1};
 	cos_t = cos(t_y);
-	sin_t = sin(t_y);
+	sin_t = -sin(t_y);
 	float y_data[16] = {cos_t,0,-sin_t,0,
 						0,1,0,0,
 						sin_t,0,cos_t,0,
 						0,0,0,1};
 	cos_t = cos(t_z);
-	sin_t = sin(t_z);
+	sin_t = -sin(t_z);
 	float z_data[16] = {cos_t,sin_t,0,0,
 						-sin_t,cos_t,0,0,
 						0,0,1,0,
@@ -143,10 +143,12 @@ void Camera::removeBackFaceOfObj(Object3d *obj){
 		float temp = view_vector.pointMultiply(&lp_p->normal_vector);
 		if (temp > 0)
 		{
+			//lp_p->color = 0xffff0000;
 			lp_p->state = POLY4D_STATE_ACTIVE;
 		} 
 		else
 		{
+			//lp_p->color = 0xff00ff00;
 			lp_p->state = POLY4D_STATE_BACKFACE;
 		}
 		lp_p++;

@@ -52,8 +52,23 @@ public:
 	void addRenderList(RenderList* list);
 	void shaderObject(Object3d* obj);
 	void render(bool backmove = true,bool cull = true);
+	inline void Mem_Set_QUAD(void *dest, UINT data, int count)
+	{
+		// this function fills or sets unsigned 32-bit aligned memory
+		// count is number of quads
+
+		_asm 
+		{ 
+				mov edi, dest   ; edi points to destination memory
+				mov ecx, count  ; number of 32-bit words to move
+				mov eax, data   ; 32-bit data
+				rep stosd       ; move data
+		} // end asm
+
+	};
 	inline void plotPixel(int x,int y,UINT color){
-		((UINT*)lp_backbuffer)[x+((y*lpitch)>>2)] = color; 
+		//((UINT*)lp_backbuffer)[x+((y*lpitch)>>2)] = color; 
+		Mem_Set_QUAD((UINT*)lp_backbuffer + x+((y*lpitch)>>2),color,1);
 	}
 
 };

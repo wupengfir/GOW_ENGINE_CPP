@@ -18,6 +18,14 @@ float cx[8] = {-1,-1,1,1,-1,1,1,-1};
 float cy[8] = {-1,-1,-1,-1,1,1,1,1};
 float cz[8] = {0,2,0,2,0,0,2,2};
 int index[36] = {2,3,1,2,1,0,4,5,2,4,2,0,6,3,2,6,2,5,6,7,1,6,1,3,6,5,4,6,4,7,1,7,4,1,4,0};
+bool moveback = false;
+bool moveright = false;
+bool moveleft = false;
+bool movefront = false;
+bool moveup = false;
+bool movedown = false;
+bool turnright = false;
+bool turnleft = false;
 //
 //float cx[3] = {-1,-1,1};
 //float cy[3] = {-1,-1,-1};
@@ -75,53 +83,85 @@ switch(msg)
 // process any messages that we didn't take care of 
 return (DefWindowProc(hwnd, msg, wparam, lparam));
 
-} // end WinProc
+} 
+
+void checkKey(){
+	if (KEYUP(83)) {
+		moveback=false;
+	}  if (KEYUP(69)) {
+		moveright=false;
+	}  if (KEYUP(81)) {
+		moveleft=false;
+	}  if (KEYUP(87)) {
+		movefront=false;
+	} if (KEYUP(32)) {
+		moveup=false;
+	} if (KEYUP(82)) {
+		movedown=false;
+	} if (KEYUP(65)) {
+		turnleft=false;
+	} if (KEYUP(68)) {
+		turnright=false;
+	}
+
+	if (KEYDOWN(83)) {
+		moveback=true;
+	}  if (KEYDOWN(69)) {
+		moveright=true;
+	}  if (KEYDOWN(81)) {
+		moveleft=true;
+	}  if (KEYDOWN(87)) {
+		movefront=true;
+	} if (KEYDOWN(32)) {
+		moveup=true;
+	} if (KEYDOWN(82)) {
+		movedown=true;
+	} if (KEYDOWN(65)) {
+		turnleft=true;
+	} if (KEYDOWN(68)) {
+		turnright=true;
+	}
+}
+
 
 int Game_Main(void *parms = NULL, int num_parms = 0)
 {
-	/*Matrix m(23);
-	float k[6] = {3,6,7,4,5,8};
-	m.init(k);
-	Matrix m1(22);
-	float b[4] = {2,6,4,5};
-	m1.init(b);
-	Matrix s(23);
-	m1.multiply(&m,&s);
-
-	Vector3d v = {2.2,3,6,0};
-	Vector3d v1;
-	vector3dInit(&v1);
-	Matrix m44(44);
-	float cc[16] = {1,2,3,4,5,6,7,8,9,1,2,3,4,5,6,7};
-	m44.init(cc);
-	m44.mulVector3d(&v,&v1);*/
 
 	if (KEYDOWN(VK_ESCAPE)){
 		SendMessage(lp_canvas->main_handler,WM_CLOSE,0,0);
 		closed = true;
-	}		
+	}
+	if (KEYDOWN(87))
+	{
+	}
 	if (closed)
 	{
 		return 1;
 	}
+	checkKey();
+	if(moveright){
+		lp_canvas->lp_camera->pos.x +=10; 
+	}
+	if(moveleft){
+		lp_canvas->lp_camera->pos.x -=10; 
+	}
+	if(movefront){
+		lp_canvas->lp_camera->pos.z +=10;
+	}
+	if(moveback){
+		lp_canvas->lp_camera->pos.z -=10;
+	}
+	if(moveup){
+		lp_canvas->lp_camera->pos.y +=10;
+	}
+	if(movedown){
+		lp_canvas->lp_camera->pos.y -=10;
+	}
 	lp_canvas->lock();
 	lp_canvas->clear();
-	//static int a = 0;
-	//a++;
-	//for (int index=0; index < 500; index++)
-	//{		
-	//	a = a==800?0:a;
-	//	unsigned int color = _RGB32BIT(rand()%256,rand()%256,rand()%256,rand()%256);
-	//	int x =  rand()%SCREEN_WIDTH*2 - SCREEN_WIDTH;
-	//	int y =  rand()%SCREEN_HEIGHT*2 - SCREEN_HEIGHT;//a;
-	//	Point2d p1;
-	//	Point2d p2;
-	//	p1.M[0] = x;
-	//	p1.M[1] = y;
-	//	p2.M[0] = rand()%SCREEN_WIDTH;
-	//	p2.M[1] = rand()%SCREEN_HEIGHT;
-	//	drawLine(p1.x,p1.y,p2.x,p1.y,color);
-	//}
+	static float a = 0;
+	a+=1;
+	cube.rotationY(a);
 	lp_canvas->render();
 	lp_canvas->unlock();
 	lp_canvas->flip();
@@ -135,7 +175,7 @@ void createObject(){
 	Poly *p = NULL;
 	cube.init(8,12,1);
 	cube.max_radius = 100;
-	cube.world_pos.z = 200;
+	cube.world_pos.z = 500;
 	for (int i = 0;i<cube.init_num_vertexs;i++)
 	{
 		v = new Vertex3d();
@@ -148,7 +188,17 @@ void createObject(){
 	}
 	for (int j = 0;j<cube.init_num_polys;j++)
 	{
-		cube.addPoly(index[j*3],index[j*3+1],index[j*3+2]);
+		Poly* temp = new Poly;
+		temp->v_index_list[0] = index[j*3];
+		temp->v_index_list[1] = index[j*3+1];
+		temp->v_index_list[2] = index[j*3+2];
+		temp->lp_vertex_object = cube.lp_vertex_trans;
+		temp->color = 0xffff0000;
+		cube.lp_polys[cube.num_polys] = *temp;
+		cube.num_polys++;
+		delete temp;
+		temp = NULL;
+		//cube.addPoly(index[j*3],index[j*3+1],index[j*3+2]);
 	}
 }
 int WINAPI WinMain(	HINSTANCE hinstance,

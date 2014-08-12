@@ -3,6 +3,15 @@
 
 #define INITGUID // make sure directX guids are included
 
+// MACROS /////////////////////////////////////////////////
+
+#define PI 3.14159
+#define DEG_TO_RAD(a) ((a)/180*PI)
+#define KEYDOWN(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 1 : 0)
+#define KEYUP(vk_code)   ((GetAsyncKeyState(vk_code) & 0x8000) ? 0 : 1)
+#define _RGB32BIT(a,r,g,b) ((b) + ((g) << 8) + ((r) << 16) + ((a) << 24))
+#define DD_INIT_STRUCT(ddstruct) { memset(&ddstruct,0,sizeof(ddstruct)); ddstruct.dwSize=sizeof(ddstruct); }
+
 #include <windows.h>   // include important windows stuff
 #include <windowsx.h> 
 #include <mmsystem.h>
@@ -46,14 +55,7 @@ typedef unsigned short WORD;
 typedef unsigned char  UCHAR;
 typedef unsigned char  BYTE;
 
-// MACROS /////////////////////////////////////////////////
 
-#define PI 3.14159
-#define DEG_TO_RAD(a) (a/180*PI)
-#define KEYDOWN(vk_code) ((GetAsyncKeyState(vk_code) & 0x8000) ? 1 : 0)
-#define KEYUP(vk_code)   ((GetAsyncKeyState(vk_code) & 0x8000) ? 0 : 1)
-#define _RGB32BIT(a,r,g,b) ((b) + ((g) << 8) + ((r) << 16) + ((a) << 24))
-#define DD_INIT_STRUCT(ddstruct) { memset(&ddstruct,0,sizeof(ddstruct)); ddstruct.dwSize=sizeof(ddstruct); }
 
 
 extern int min_clip_x,                             // clipping rectangle 

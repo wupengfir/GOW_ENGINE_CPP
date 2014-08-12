@@ -265,6 +265,8 @@ public:
 
 	Poly* lp_polys;
 
+	float rx,ry,rz;
+
 	Object3d(void);
 	~Object3d();
 	void scale(float x,float y,float z);	
@@ -306,6 +308,36 @@ public:
 		temp = NULL;
 	};
 
+	//inline void rotationX(float deg){
+	//	float rad = DEG_TO_RAD(deg - rx);
+	//	rx = deg;
+	//	Matrix mx(44);
+	//	float cos_t = cos(rad);
+	//	float sin_t = sin(rad);
+	//	float x_data[16] = {1,0,0,0,
+	//						0,cos_t,-sin_t,0,
+	//						0,sin_t,cos_t,0,
+	//						0,0,0,1};
+	//	mx.init(x_data);
+	//	transformObject(this,&mx,TRANSFORM_LOCAL_ONLY,false);
+	//};
+
+	void rotationY(float deg);
+
+	//inline void rotationZ(float deg){
+	//	float rad = DEG_TO_RAD(deg - rz);
+	//	rz = deg;
+	//	Matrix mx(44);
+	//	float cos_t = cos(rad);
+	//	float sin_t = sin(rad);
+	//	float z_data[16] = {cos_t,-sin_t,0,0,
+	//						sin_t,cos_t,0,0,
+	//						0,0,1,0,
+	//						0,0,0,1};
+	//	mx.init(z_data);
+	//	transformObject(this,&mx,TRANSFORM_LOCAL_ONLY,false);
+	//};
+
 };
 
 class RenderList{
@@ -319,7 +351,14 @@ public:
 	};
 
 	inline void addPoly(Poly* poly){
-		polys.push_back(poly);
+		if(polys.capacity() == 0){
+			polys.resize(1024);
+		}
+		else if (polys.capacity() == num_polys)
+		{
+			polys.resize(polys.capacity()*2);
+		}
+		polys[num_polys] = poly;
 		num_polys++;
 	}
 };
@@ -329,7 +368,7 @@ public:
 	int width;
 	int height;
 	std::vector<float>* lp_data;
-	
+
 	int multiply(Matrix* m,Matrix* storage);
 	int mulVector3d(Vector3d* vec,Vector3d* storage);
 	int mulPoint3d(Point3d* p,Point3d* storage);

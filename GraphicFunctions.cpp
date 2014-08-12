@@ -1,4 +1,7 @@
 #include "GraphicFunctions.h"
+
+
+
 int drawLine(int x0, int y0, int x1, int y1, UINT color)
 {
 	if (!Clip_Line(x0,y0,x1,y1))
@@ -335,3 +338,5 @@ int Clip_Line(int &x1,int &y1,int &x2, int &y2)
 	return(1);
 
 } 
+
+
