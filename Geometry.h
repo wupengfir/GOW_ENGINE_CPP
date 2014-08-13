@@ -56,11 +56,13 @@
 
 class Vector3d;
 class Object3d;
+class Point3d;
 class Matrix;
 inline void vector3dCopy(Vector3d* vdst, Vector3d* vsrc);
 inline void vector3dInit(Vector3d* vdst);
 inline float vector3dLengthFast(Vector3d* va);
 inline void normalizeVector3d(Vector3d* v);
+inline float point_distance(Point3d* p1,Point3d* p2);
 void transformObject(Object3d* obj,Matrix* m,int type,bool transform_basis);
 
 class Point2d 
@@ -290,6 +292,13 @@ public:
 		}
 	};
 
+	inline bool avaliable(){
+		if(!(state&OBJECT_STATE_ACTIVE)|| state&OBJECT_STATE_CLIPPED || !(state&OBJECT_STATE_VISIBLE)){
+			return false;
+		}			
+		return true;
+	};
+
 	inline void addVertex(Vertex3d *v){
 		lp_vertex_local[num_vertices] = *v;
 		lp_vertex_trans[num_vertices] = *v;
@@ -472,3 +481,8 @@ inline void normalizeVector3d(Vector3d* v){
 	v->z /= length;
 };
 
+inline float point_distance(Point3d* p1,Point3d* p2){
+	Vector3d v;
+	v.build(p1,p2);
+	return vector3dLengthFast(&v);
+};

@@ -232,10 +232,11 @@ void Canvas::render(bool backmove,bool cull){
 		{
 			lp_camera->cullObject(obj);
 		}
-		if (obj->state == OBJECT_STATE_CLIPPED)
+		if (obj->state&OBJECT_STATE_CLIPPED)
 		{
 			continue;
 		}
+		lightObject(obj);
 		transformObject(obj,&(lp_camera->mcam),TRANSFORM_TRANS_ONLY,false);
 		lp_camera->cameraToPerspective_object(obj);
 		lp_camera->perspectiveToScreen_object(obj);
@@ -255,15 +256,99 @@ void Canvas::render(bool backmove,bool cull){
 			p1 = &((temp->lp_vertex_object[temp->v_index_list[0]]).pos);
 			p2 = &((temp->lp_vertex_object[temp->v_index_list[1]]).pos);
 			p3 = &((temp->lp_vertex_object[temp->v_index_list[2]]).pos);
-			drawLine(p1->x,p1->y,p2->x,p2->y,temp->color);
-			drawLine(p2->x,p2->y,p3->x,p3->y,temp->color);
-			drawLine(p3->x,p3->y,p1->x,p1->y,temp->color);
-			//Draw_Triangle_2D(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,temp->color,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+			drawLine(p1->x,p1->y,p2->x,p2->y,0xff00ffff);
+			drawLine(p2->x,p2->y,p3->x,p3->y,0xff00ffff);
+			drawLine(p3->x,p3->y,p1->x,p1->y,0xff00ffff);
+			Draw_Triangle_2D(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,temp->lit_color[0],lp_canvas->lp_backbuffer,lp_canvas->lpitch);
 		}
 	}
 	
 };
 
+void Canvas::lightObject(Object3d* obj){
+	Light* lp_light;
+	Poly* lp_poly;
+	UINT r_sum = 0,g_sum = 0,b_sum = 0,r_origin = 0,g_origin = 0,b_origin = 0,r_light = 0,g_light = 0,b_light = 0;
+	float dp = 0,dist = 0,atten = 0;
+	Vector3d light_dir;
+	if (obj->avaliable())
+	{
+		for (int k = 0;k<obj->num_polys;k++)
+		{
+			lp_poly = (obj->lp_polys) + k;
+			r_sum = 0;
+			g_sum = 0;
+			b_sum = 0;
+			for (std::vector<Light*>::size_type i = 0;i!=LightList.size();i++)
+			{
+				lp_light = LightList[i];
+				if (lp_light->state == Light::LIGHTV1_STATE_OFF)
+				{
+					continue;
+				}
+				r_origin = lp_poly->color>>16&0x000000ff;
+				g_origin = lp_poly->color>>8&0x000000ff;
+				b_origin = lp_poly->color&0x000000ff;
+				switch(lp_light->attr){
+					case Light::LIGHTV1_ATTR_AMBIENT:
+						r_light = lp_light->c_ambient>>16&0x000000ff;
+						g_light = lp_light->c_ambient>>8&0x000000ff;
+						b_light = lp_light->c_ambient&0x000000ff;
+						r_sum += r_origin*r_light/256;
+						g_sum += g_origin*g_light/256;
+						b_sum += b_origin*b_light/256;
+					break;
+					case Light::LIGHTV1_ATTR_INFINITE:
+						dp = lp_light->dir->pointMultiply(&(lp_poly->normal_vector));
+						if (dp>0)
+						{
+							r_light = lp_light->c_diffuse>>16&0x000000ff;
+							g_light = lp_light->c_diffuse>>8&0x000000ff;
+							b_light = lp_light->c_diffuse&0x000000ff;
+							r_sum += r_origin*r_light*dp/256;
+							g_sum += g_origin*g_light*dp/256;
+							b_sum += b_origin*b_light*dp/256;
+						}						
+						break;
+					case Light::LIGHTV1_ATTR_POINT:
+						dist = point_distance(lp_light->pos,&((lp_poly->lp_vertex_object[lp_poly->v_index_list[0]]).pos));
+						light_dir.build(&((lp_poly->lp_vertex_object[lp_poly->v_index_list[0]]).pos),lp_light->pos);
+						normalizeVector3d(&light_dir);
+						dp = light_dir.pointMultiply(&(lp_poly->normal_vector));
+						atten = lp_light->kc + lp_light->kl*dist + lp_light->kq*dist*dist;
+						if (dp>0)
+						{
+							r_light = lp_light->c_specular>>16&0x000000ff;
+							g_light = lp_light->c_specular>>8&0x000000ff;
+							b_light = lp_light->c_specular&0x000000ff;
+							r_sum += r_origin*r_light*dp/(256*atten*dist);
+							g_sum += g_origin*g_light*dp/(256*atten*dist);
+							b_sum += b_origin*b_light*dp/(256*atten*dist);
+						}						
+						break;
+					case Light::LIGHTV1_ATTR_SPOTLIGHT_SIMPLE:
+						dist = point_distance(lp_light->pos,&((lp_poly->lp_vertex_object[lp_poly->v_index_list[0]]).pos));
+						light_dir.copy(lp_light->dir);
+						normalizeVector3d(&light_dir);
+						dp = light_dir.pointMultiply(&(lp_poly->normal_vector));
+						atten = lp_light->kc + lp_light->kl*dist + lp_light->kq*dist*dist;
+						if (dp>0)
+						{
+							r_light = lp_light->c_specular>>16&0x000000ff;
+							g_light = lp_light->c_specular>>8&0x000000ff;
+							b_light = lp_light->c_specular&0x000000ff;
+							r_sum += r_origin*r_light*dp/(256*atten*dist);
+							g_sum += g_origin*g_light*dp/(256*atten*dist);
+							b_sum += b_origin*b_light*dp/(256*atten*dist);
+						}						
+						break;
+				}
+			}
+			lp_poly->lit_color[0] = _RGB32BIT(0xff,r_sum>255?255:r_sum,g_sum>255?255:g_sum,b_sum>255?255:b_sum);
+		}
+
+	}	
+};
 
 Canvas::~Canvas(void)
 {

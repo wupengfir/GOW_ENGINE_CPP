@@ -127,7 +127,7 @@ Matrix::~Matrix(){
 };
 
 Object3d::Object3d(){
-	attr = OBJECT_STATE_ACTIVE|OBJECT_STATE_VISIBLE;
+	state = OBJECT_STATE_ACTIVE|OBJECT_STATE_VISIBLE;
 };
 
 void Object3d::rotationY(float deg){

@@ -11,6 +11,7 @@
 #define KEYUP(vk_code)   ((GetAsyncKeyState(vk_code) & 0x8000) ? 0 : 1)
 #define _RGB32BIT(a,r,g,b) ((b) + ((g) << 8) + ((r) << 16) + ((a) << 24))
 #define DD_INIT_STRUCT(ddstruct) { memset(&ddstruct,0,sizeof(ddstruct)); ddstruct.dwSize=sizeof(ddstruct); }
+#define FCMP(a,b) ((a>b?(a-b):(b-a))<0.001)
 
 #include <windows.h>   // include important windows stuff
 #include <windowsx.h> 
@@ -73,4 +74,5 @@ void releaseT(T a)
 	a->Release();
 	a = NULL;
 } 
+
 

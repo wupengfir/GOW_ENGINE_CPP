@@ -2,7 +2,17 @@
 #include "Common.h"
 #include "Geometry.h"
 #include "GraphicFunctions.h"
-//#include "Render.h"
+#include "Light.h"
+inline void Mem_Set_QUAD(void *dest, UINT data, int count)
+{
+	_asm 
+	{ 
+		mov edi, dest   ; edi points to destination memory
+			mov ecx, count  ; number of 32-bit words to move
+			mov eax, data   ; 32-bit data
+			rep stosd       ; move data
+	} 
+};
 
 class Camera;
 class Point2d;
@@ -14,6 +24,7 @@ class Plane3d;
 class Object3d;
 class RenderList;
 class Matrix;
+class Light;
 class Canvas
 {
 private:
@@ -36,6 +47,7 @@ public:
 	RenderList* renderlist_all;
 	std::vector<Object3d*> obj_list;
 	std::vector<RenderList*> renderlist_list;
+	std::vector<Light*> LightList;
 public:
 	void init(HINSTANCE hinstance,WNDPROC callback,int width,int height,int bpp,int windowed);
 	UCHAR* lock();
@@ -50,22 +62,13 @@ public:
 	void setCamera(Camera* camera);
 	void addObject(Object3d* obj);
 	void addRenderList(RenderList* list);
-	void shaderObject(Object3d* obj);
+	void lightObject(Object3d* obj);
 	void render(bool backmove = true,bool cull = true);
-	inline void Mem_Set_QUAD(void *dest, UINT data, int count)
-	{
-		// this function fills or sets unsigned 32-bit aligned memory
-		// count is number of quads
 
-		_asm 
-		{ 
-				mov edi, dest   ; edi points to destination memory
-				mov ecx, count  ; number of 32-bit words to move
-				mov eax, data   ; 32-bit data
-				rep stosd       ; move data
-		} // end asm
-
+	inline void addLight(Light* light){
+		LightList.push_back(light);
 	};
+
 	inline void plotPixel(int x,int y,UINT color){
 		//((UINT*)lp_backbuffer)[x+((y*lpitch)>>2)] = color; 
 		Mem_Set_QUAD((UINT*)lp_backbuffer + x+((y*lpitch)>>2),color,1);

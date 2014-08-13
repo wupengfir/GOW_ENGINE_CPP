@@ -187,7 +187,7 @@ void Camera::cameraToPerspective_object(Object3d *obj){
 	}
 };
 void Camera::cullObject(Object3d* obj,int type){
-	obj->state = OBJECT_STATE_ACTIVE;
+	obj->state = OBJECT_STATE_ACTIVE|OBJECT_STATE_VISIBLE;
 	Point3d temp;
 	mcam.mulPoint3d(&obj->world_pos,&temp);
 	if(type & CULL_Z){

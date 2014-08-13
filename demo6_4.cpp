@@ -123,10 +123,9 @@ void checkKey(){
 	}
 }
 
-
+float ry = 0;
 int Game_Main(void *parms = NULL, int num_parms = 0)
 {
-
 	if (KEYDOWN(VK_ESCAPE)){
 		SendMessage(lp_canvas->main_handler,WM_CLOSE,0,0);
 		closed = true;
@@ -147,9 +146,11 @@ int Game_Main(void *parms = NULL, int num_parms = 0)
 	}
 	if(movefront){
 		lp_canvas->lp_camera->pos.z +=10;
+		//ry += 1;
 	}
 	if(moveback){
 		lp_canvas->lp_camera->pos.z -=10;
+		//ry -= 1;
 	}
 	if(moveup){
 		lp_canvas->lp_camera->pos.y +=10;
@@ -159,15 +160,27 @@ int Game_Main(void *parms = NULL, int num_parms = 0)
 	}
 	lp_canvas->lock();
 	lp_canvas->clear();
-	static float a = 0;
-	a+=1;
-	cube.rotationY(a);
+	ry+=1;
+	cube.rotationY(ry);
 	lp_canvas->render();
 	lp_canvas->unlock();
 	lp_canvas->flip();
 	Sleep(30);
 	return(1);
 
+}
+
+void createLight(){
+	Light *light = NULL;
+	/*light = new Light();
+	light->init(Light::LIGHTV1_STATE_ON,Light::LIGHTV1_ATTR_AMBIENT,_RGB32BIT(0xff,100,100,100),0,0,0,0,0,NULL,NULL,0,0,0);
+	lp_canvas->addLight(light);*/
+	light = new Light();
+	Vector3d* v = new Vector3d();
+	v->init(-1,2,-0.5,0);
+	normalizeVector3d(v);
+	light->init(Light::LIGHTV1_STATE_ON,Light::LIGHTV1_ATTR_INFINITE,0,_RGB32BIT(0xff,100,100,200),0,0,0,0,NULL,v,0,0,0);
+	lp_canvas->addLight(light);
 }
 
 void createObject(){
@@ -209,6 +222,7 @@ int WINAPI WinMain(	HINSTANCE hinstance,
 	lp_canvas = new Canvas();
 	lp_canvas->init(hinstance,WindowProc,SCREEN_WIDTH,SCREEN_HEIGHT,SCREEN_BPP,1);
 	createObject();
+	createLight();
 	Camera *camera = new Camera();
 	Vector3d dir;
 	dir.init(0,0,0,1);

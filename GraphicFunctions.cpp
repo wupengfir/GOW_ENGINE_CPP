@@ -339,4 +339,190 @@ int Clip_Line(int &x1,int &y1,int &x2, int &y2)
 
 } 
 
+void Draw_Triangle_2D(float x1,float y1, float x2,float y2, float x3,float y3, int color, UCHAR *dest_buffer, int mempitch){
+	if ((FCMP(x1,x2)&&FCMP(x2,x3))||(FCMP(y1,y2)&&FCMP(y2,y3)))
+	{
+		return;
+	}
+	float tx,ty,nx;
+	if (y2<y1)
+	{
+		SWAP(x1,x2,tx);
+		SWAP(y1,y2,ty);
+	}
+	if(y3<y2){
+		SWAP(x2,x3,tx);
+		SWAP(y2,y3,ty);
+	}
+	if(y2<y1){
+		SWAP(x1,x2,tx);
+		SWAP(y1,y2,ty);
+	}
+	if (y3<min_clip_y||y1>max_clip_y||
+		(x1<min_clip_x&&x2<min_clip_x&&x3<min_clip_x)||
+		(x1>max_clip_x&&x2>max_clip_x&&x3>max_clip_x))
+	{
+		return;
+	}
+	if (FCMP(y1,y2))
+	{
+		Draw_Top_Tri(x3,y3,x1,y1,x2,y2,color,dest_buffer,mempitch);
+		return;
+	}
+	if (FCMP(y2,y3))
+	{
+		Draw_Bottom_Tri(x1,y1,x2,y2,x3,y3,color,dest_buffer,mempitch);
+		return;
+	}
+	nx = (y2-y1)*(x3-x1)/(y3-y1)+x1;
+	Draw_Top_Tri(x3,y3,x2,y2,nx,y2,color,dest_buffer,mempitch);
+	Draw_Bottom_Tri(x1,y1,x2,y2,nx,y2,color,dest_buffer,mempitch);
+};
 
+void Draw_Bottom_Tri(float x1,float y1, float x2,float y2, float x3,float y3, int color, UCHAR *dest_buffer, int mempitch){
+	float tx,left,right,xs,xe;
+	int iy1,iy3,loopy;
+	UINT* lp_buffer = (UINT*)dest_buffer;
+	UINT* lp_addr = NULL;
+	mempitch = mempitch>>2;
+	if (x3<x2)
+	{
+		SWAP(x2,x3,tx);
+	}
+	left = (x2-x1)/(y2-y1);
+	right = (x3-x1)/(y3-y1);
+	xs = x1;
+	xe = x1;
+	if (y1<min_clip_y)
+	{
+		xs += (min_clip_y - y1)*left;
+		xe += (min_clip_y - y1)*right;
+		y1 = min_clip_y;
+		iy1 = y1;
+	} 
+	else
+	{
+		iy1 = ceil(y1);
+		xs += (iy1 - y1)*left;
+		xe += (iy1 - y1)*right;
+	}
+	if (y3>max_clip_y)
+	{
+		y3 = max_clip_y;
+		iy3 = max_clip_y - 1;
+	} 
+	else
+	{
+		iy3 = ceil(y3) - 1;
+	}
+	lp_addr = lp_buffer + iy1*mempitch;
+	if(x1>=min_clip_x&&x1<=max_clip_x&&x2>=min_clip_x&&x2<=max_clip_x&&x3>=min_clip_x&&x3<=max_clip_x){
+		for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch)
+		{
+			Mem_Set_QUAD(lp_addr+(int)xs,color,(int)xe-(int)xs + 1);
+			xs += left;
+			xe += right;
+		}
+	}else{
+		float clip_xs,clip_xe;
+		
+		for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch)
+		{
+			clip_xe = xe;
+			clip_xs = xs;
+			if (clip_xe<min_clip_x)
+			{
+				continue;
+			}
+			if (clip_xs>max_clip_x)
+			{
+				continue;
+			}
+			if (clip_xs<min_clip_x)
+			{
+				clip_xs = min_clip_x;
+			}
+			if (clip_xe>max_clip_x)
+			{
+				clip_xe = max_clip_x;
+			}
+			Mem_Set_QUAD(lp_addr+(int)clip_xe,color,(int)clip_xe-(int)clip_xs + 1);
+			xs += left;
+			xe += right;
+		}		
+	}
+};
+
+void Draw_Top_Tri(float x1,float y1, float x2,float y2, float x3,float y3, int color, UCHAR *dest_buffer, int mempitch){
+	float tx,left,right,xs,xe;
+	int iy1,iy3,loopy;
+	UINT* lp_buffer = (UINT*)dest_buffer;
+	UINT* lp_addr = NULL;
+	mempitch = mempitch>>2;
+	if (x3<x2)
+	{
+		SWAP(x2,x3,tx);
+	}
+	left = (x2-x1)/(y2-y1);
+	right = (x3-x1)/(y3-y1);
+	xs = x1;
+	xe = x1;
+	if (y1>max_clip_y)
+	{
+		xs += (max_clip_y - y1)*left;
+		xe += (max_clip_y - y1)*right;
+		y1 = max_clip_y;
+		iy1 = y1;
+	} 
+	else
+	{
+		iy1 = floor(y1);
+		xs += (iy1 - y1)*left;
+		xe += (iy1 - y1)*right;
+	}
+	if (y3<min_clip_y)
+	{
+		y3 = min_clip_y;
+		iy3 = min_clip_y - 1;
+	} 
+	else
+	{
+		iy3 = ceil(y3);
+	}
+	lp_addr = lp_buffer + iy1*mempitch;
+	if(x1>=min_clip_x&&x1<=max_clip_x&&x2>=min_clip_x&&x2<=max_clip_x&&x3>=min_clip_x&&x3<=max_clip_x){
+		for (loopy = iy1;loopy>=iy3;loopy--,lp_addr-=mempitch)
+		{
+			Mem_Set_QUAD(lp_addr+(int)xs,color,(int)xe-(int)xs + 1);
+			xs -= left;
+			xe -= right;
+		}
+	}else{
+		float clip_xs,clip_xe;
+
+		for (loopy = iy1;loopy>=iy3;loopy--,lp_addr-=mempitch)
+		{
+			clip_xe = xe;
+			clip_xs = xs;
+			if (clip_xe<min_clip_x)
+			{
+				continue;
+			}
+			if (clip_xs>max_clip_x)
+			{
+				continue;
+			}
+			if (clip_xs<min_clip_x)
+			{
+				clip_xs = min_clip_x;
+			}
+			if (clip_xe>max_clip_x)
+			{
+				clip_xe = max_clip_x;
+			}
+			Mem_Set_QUAD(lp_addr+(int)clip_xe,color,(int)clip_xe-(int)clip_xs + 1);
+			xs -= left;
+			xe -= right;
+		}		
+	}
+};
