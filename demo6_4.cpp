@@ -1,7 +1,7 @@
 #include "Common.h"
 #include "Geometry.h"
 #include "GraphicFunctions.h"
-
+#include "Loader.h"
 LPDIRECTDRAWCLIPPER   lpddclipper  = NULL;   // dd clipper
 DDBLTFX               ddbltfx;               // used to fill
 HRESULT               ddrval;                // result back from dd calls
@@ -175,11 +175,16 @@ void createLight(){
 	/*light = new Light();
 	light->init(Light::LIGHTV1_STATE_ON,Light::LIGHTV1_ATTR_AMBIENT,_RGB32BIT(0xff,100,100,100),0,0,0,0,0,NULL,NULL,0,0,0);
 	lp_canvas->addLight(light);*/
+	//light = new Light();
+	//Vector3d* v = new Vector3d();
+	//v->init(-1,2,-0.5,0);
+	//normalizeVector3d(v);
+	//light->init(Light::LIGHTV1_STATE_ON,Light::LIGHTV1_ATTR_INFINITE,0,_RGB32BIT(0xff,100,100,200),0,0,0,0,NULL,v,0,0,0);
+	//lp_canvas->addLight(light);
 	light = new Light();
-	Vector3d* v = new Vector3d();
-	v->init(-1,2,-0.5,0);
-	normalizeVector3d(v);
-	light->init(Light::LIGHTV1_STATE_ON,Light::LIGHTV1_ATTR_INFINITE,0,_RGB32BIT(0xff,100,100,200),0,0,0,0,NULL,v,0,0,0);
+	Point3d* v = new Point3d();
+	v->init(0,1000,0);
+	light->init(Light::LIGHTV1_STATE_ON,Light::LIGHTV1_ATTR_POINT,0,0,_RGB32BIT(0xff,100,100,200),0.001,0,0,v,NULL,0,0,0);
 	lp_canvas->addLight(light);
 }
 
@@ -223,11 +228,12 @@ int WINAPI WinMain(	HINSTANCE hinstance,
 	lp_canvas->init(hinstance,WindowProc,SCREEN_WIDTH,SCREEN_HEIGHT,SCREEN_BPP,1);
 	createObject();
 	createLight();
+	loadObject_ASC("cube01.asc",&cube,NULL,NULL,NULL);
 	Camera *camera = new Camera();
 	Vector3d dir;
 	dir.init(0,0,0,1);
 	Point3d pos;
-	pos.init(0,140,-100,1);
+	pos.init(0,0,-100,1);
 	Point3d target;
 	target.init(0,0,0,0);
 

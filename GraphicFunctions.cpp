@@ -393,7 +393,7 @@ void Draw_Bottom_Tri(float x1,float y1, float x2,float y2, float x3,float y3, in
 	right = (x3-x1)/(y3-y1);
 	xs = x1;
 	xe = x1;
-	if (y1<min_clip_y)
+	if (y1<=min_clip_y)
 	{
 		xs += (min_clip_y - y1)*left;
 		xe += (min_clip_y - y1)*right;
@@ -406,7 +406,7 @@ void Draw_Bottom_Tri(float x1,float y1, float x2,float y2, float x3,float y3, in
 		xs += (iy1 - y1)*left;
 		xe += (iy1 - y1)*right;
 	}
-	if (y3>max_clip_y)
+	if (y3>=max_clip_y)
 	{
 		y3 = max_clip_y;
 		iy3 = max_clip_y - 1;
@@ -467,7 +467,7 @@ void Draw_Top_Tri(float x1,float y1, float x2,float y2, float x3,float y3, int c
 	right = (x3-x1)/(y3-y1);
 	xs = x1;
 	xe = x1;
-	if (y1>max_clip_y)
+	if (y1>=max_clip_y)
 	{
 		xs += (max_clip_y - y1)*left;
 		xe += (max_clip_y - y1)*right;
@@ -480,10 +480,10 @@ void Draw_Top_Tri(float x1,float y1, float x2,float y2, float x3,float y3, int c
 		xs += (iy1 - y1)*left;
 		xe += (iy1 - y1)*right;
 	}
-	if (y3<min_clip_y)
+	if (y3<=min_clip_y)
 	{
 		y3 = min_clip_y;
-		iy3 = min_clip_y - 1;
+		iy3 = min_clip_y;
 	} 
 	else
 	{

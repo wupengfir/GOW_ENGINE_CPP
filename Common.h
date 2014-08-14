@@ -16,7 +16,8 @@
 #include <windows.h>   // include important windows stuff
 #include <windowsx.h> 
 #include <mmsystem.h>
-#include <iostream> // include important C/C++ stuff
+#include <fstream>
+#include <sstream>
 #include <conio.h>
 #include <stdlib.h>
 #include <malloc.h>
@@ -66,6 +67,66 @@ extern int min_clip_x,                             // clipping rectangle
 
 class Canvas;
 extern Canvas* lp_canvas;
+
+inline void trimString(std::string& str){
+	str.erase(str.find_last_not_of(" ") + 1);
+	str.erase(0,str.find_first_not_of(" "));
+};
+
+inline bool startWith(std::string& str,const char* find){
+	int index = 0;
+	while(find[index] != '\0'){
+		if(str[index] != find[index]){
+			return false;
+		}
+		index++;
+	}
+	return true;
+};
+
+inline int indexOf(std::string& str,const char* find,int start_index = 0){
+	int temp = -1;
+	bool testing = false;
+	int i = 0;
+	if (start_index >= str.size())
+	{
+		return -1;
+	}
+	for (std::string::size_type index = start_index;index!=str.size();index++)
+	{
+		if (str[index] == find[0])
+		{
+			i = 1;
+			temp = index;
+			while (find[i] != '\0')
+			{
+				if ((index + i)==str.size())
+				{
+					temp = -1;
+					return -1;
+				}
+				if (str[index + i] != find[i])
+				{
+					temp = -1;
+					break;
+				}
+				i++;
+			}
+			if (temp != -1)
+			{
+				return temp;
+			}
+		}else{
+			temp = -1;
+		}
+	}
+	return temp;
+};
+
+inline std::string& subStringByEndSign(std::string& str,int start_index,const char* sign,std::string& storage){
+	int index = 0;
+	//while()
+};
 
 template<typename T> 
 void releaseT(T a) 

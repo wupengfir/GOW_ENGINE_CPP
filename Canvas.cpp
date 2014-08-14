@@ -256,9 +256,9 @@ void Canvas::render(bool backmove,bool cull){
 			p1 = &((temp->lp_vertex_object[temp->v_index_list[0]]).pos);
 			p2 = &((temp->lp_vertex_object[temp->v_index_list[1]]).pos);
 			p3 = &((temp->lp_vertex_object[temp->v_index_list[2]]).pos);
-			drawLine(p1->x,p1->y,p2->x,p2->y,0xff00ffff);
+			/*drawLine(p1->x,p1->y,p2->x,p2->y,0xff00ffff);
 			drawLine(p2->x,p2->y,p3->x,p3->y,0xff00ffff);
-			drawLine(p3->x,p3->y,p1->x,p1->y,0xff00ffff);
+			drawLine(p3->x,p3->y,p1->x,p1->y,0xff00ffff);*/
 			Draw_Triangle_2D(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,temp->lit_color[0],lp_canvas->lp_backbuffer,lp_canvas->lpitch);
 		}
 	}
