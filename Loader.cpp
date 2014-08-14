@@ -6,6 +6,8 @@ void loadObject_ASC(char* path,Object3d* obj,Point3d* p_pos,Vector3d* p_scale,Ma
 	char number[10];
 	std::string data;
 	std::stringstream transfer;
+	std::string temp;
+	int index = 0;
 	if (p_pos)
 	{
 		obj->world_pos.copy(p_pos);
@@ -23,10 +25,10 @@ void loadObject_ASC(char* path,Object3d* obj,Point3d* p_pos,Vector3d* p_scale,Ma
 		}
 		if (startWith(data,"Vertex"))
 		{
-			int index = indexOf(data,"X:");
-			if (indexOf(data,"X:") != -1)
+			index = indexOf(data,"X:");
+			if (index != -1)
 			{
-
+				subStringByBlank(data,index+2,temp);
 			}
 		}
 	}

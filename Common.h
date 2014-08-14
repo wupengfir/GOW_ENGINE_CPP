@@ -123,9 +123,39 @@ inline int indexOf(std::string& str,const char* find,int start_index = 0){
 	return temp;
 };
 
-inline std::string& subStringByEndSign(std::string& str,int start_index,const char* sign,std::string& storage){
-	int index = 0;
-	//while()
+inline std::string& subStringByBlank(std::string& str,int start_index,std::string& storage){
+	int index = start_index;
+	int num = 0;
+	int length = 3;
+	char* buffer = new char[length];
+	char* temp = NULL;
+	while(str[index] != ' '&&index<str.size()){
+		if (num == length)
+		{
+			length *= 2;
+			temp = new char[length];
+			memcpy(temp,buffer,length);
+			delete buffer;
+			buffer = temp;
+			temp = NULL;
+		}
+		buffer[num] = str[index];
+		index++;
+		num++;
+	}
+	if (num == length)
+	{
+		length++;
+		temp = new char[length];
+		memcpy(temp,buffer,length);
+		delete buffer;
+		buffer = temp;
+		temp = NULL;
+	}
+	buffer[num] = '\0';
+	storage = buffer;
+	delete buffer;
+	return storage;
 };
 
 template<typename T> 
