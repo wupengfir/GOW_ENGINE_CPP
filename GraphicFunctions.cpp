@@ -430,6 +430,8 @@ void Draw_Bottom_Tri(float x1,float y1, float x2,float y2, float x3,float y3, in
 		{
 			clip_xe = xe;
 			clip_xs = xs;
+			xs += left;
+			xe += right;
 			if (clip_xe<min_clip_x)
 			{
 				continue;
@@ -446,9 +448,8 @@ void Draw_Bottom_Tri(float x1,float y1, float x2,float y2, float x3,float y3, in
 			{
 				clip_xe = max_clip_x;
 			}
-			Mem_Set_QUAD(lp_addr+(int)clip_xe,color,(int)clip_xe-(int)clip_xs + 1);
-			xs += left;
-			xe += right;
+			Mem_Set_QUAD(lp_addr+(int)clip_xs,color,(int)clip_xe-(int)clip_xs + 1);
+			
 		}		
 	}
 };
@@ -504,6 +505,8 @@ void Draw_Top_Tri(float x1,float y1, float x2,float y2, float x3,float y3, int c
 		{
 			clip_xe = xe;
 			clip_xs = xs;
+			xs -= left;
+			xe -= right;
 			if (clip_xe<min_clip_x)
 			{
 				continue;
@@ -520,9 +523,8 @@ void Draw_Top_Tri(float x1,float y1, float x2,float y2, float x3,float y3, int c
 			{
 				clip_xe = max_clip_x;
 			}
-			Mem_Set_QUAD(lp_addr+(int)clip_xe,color,(int)clip_xe-(int)clip_xs + 1);
-			xs -= left;
-			xe -= right;
+			Mem_Set_QUAD(lp_addr+(int)clip_xs,color,(int)clip_xe-(int)clip_xs + 1);
+			
 		}		
 	}
 };

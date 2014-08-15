@@ -159,16 +159,22 @@ void Object3d::init(int num_v,int num_p,int num_f){
 	lp_vertex_local = new Vertex3d[num_v*num_f];
 	lp_vertex_trans = new Vertex3d[num_v*num_f];
 	lp_polys = new Poly[num_p];
-	memset((void*)lp_vertex_local,0,sizeof(Vertex3d)*num_v*num_f);
-	memset((void*)lp_vertex_trans,0,sizeof(Vertex3d)*num_v*num_f);
-	memset((void*)lp_polys,0,sizeof(Poly)*num_p);
+	
+	//memset((void*)lp_vertex_local,0,sizeof(Vertex3d)*num_v*num_f);
+	//memset((void*)lp_vertex_trans,0,sizeof(Vertex3d)*num_v*num_f);
+	//memset((void*)lp_polys,0,sizeof(Poly)*num_p);
+
+	for (int i = 0;i<num_p;i++)
+	{
+		lp_polys[i].lp_vertex_object = lp_vertex_trans;
+	}
 
 	lp_head_vlist_local = lp_vertex_local;
 	lp_head_vlist_trans = lp_vertex_trans;
 
 	num_frame = num_f;
-	init_num_polys = num_p;
-	init_num_vertexs = num_v;
+	num_polys = num_p;
+	num_vertices = num_v;
 };
 
 

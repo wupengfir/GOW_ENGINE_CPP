@@ -126,6 +126,10 @@ void checkKey(){
 float ry = 0;
 int Game_Main(void *parms = NULL, int num_parms = 0)
 {
+	Vector3d direction;
+	Vector3d result;
+	direction.init(0,0,0,1);
+	result.init(0,0,0,1);
 	if (KEYDOWN(VK_ESCAPE)){
 		SendMessage(lp_canvas->main_handler,WM_CLOSE,0,0);
 		closed = true;
@@ -139,29 +143,95 @@ int Game_Main(void *parms = NULL, int num_parms = 0)
 	}
 	checkKey();
 	if(moveright){
-		lp_canvas->lp_camera->pos.x +=10; 
+		direction.x +=10; 
 	}
 	if(moveleft){
-		lp_canvas->lp_camera->pos.x -=10; 
+		direction.x -=10; 
 	}
 	if(movefront){
-		lp_canvas->lp_camera->pos.z +=10;
-		//ry += 1;
+		direction.z +=10;
 	}
 	if(moveback){
-		lp_canvas->lp_camera->pos.z -=10;
-		//ry -= 1;
+		direction.z -=10;
 	}
 	if(moveup){
-		lp_canvas->lp_camera->pos.y +=10;
+		direction.y +=10;
 	}
 	if(movedown){
-		lp_canvas->lp_camera->pos.y -=10;
+		direction.y -=10;
+	}
+	if(turnright){
+		lp_canvas->lp_camera->dir.y += 0.1;
+	}
+	if(turnleft){
+		lp_canvas->lp_camera->dir.y -= 0.1;
+	}
+	if (moveback||movedown||movefront||moveleft||moveright||moveup||turnleft||turnright)
+	{
+
+		Matrix mx_inv(44);
+		Matrix my_inv(44);
+		Matrix mz_inv(44);
+		float t_x = lp_canvas->lp_camera->dir.x;
+		float t_y = lp_canvas->lp_camera->dir.y;
+		float t_z = lp_canvas->lp_camera->dir.z;
+		float cos_t = cos(t_x);
+		float sin_t = sin(t_x);
+		float x_data[16] = {1,0,0,0,
+			0,cos_t,sin_t,0,
+			0,-sin_t,cos_t,0,
+			0,0,0,1};
+		cos_t = cos(t_y);
+		sin_t = sin(t_y);
+		float y_data[16] = {cos_t,0,-sin_t,0,
+			0,1,0,0,
+			sin_t,0,cos_t,0,
+			0,0,0,1};
+		cos_t = cos(t_z);
+		sin_t = sin(t_z);
+		float z_data[16] = {cos_t,sin_t,0,0,
+			-sin_t,cos_t,0,0,
+			0,0,1,0,
+			0,0,0,1};
+		mx_inv.init(x_data);
+		my_inv.init(y_data);
+		mz_inv.init(z_data);
+
+		Matrix storage_yz(44);
+		Matrix storage_yzx(44);
+		my_inv.multiply(&mz_inv,&storage_yz);
+		storage_yz.multiply(&mx_inv,&storage_yzx);
+
+		storage_yzx.mulVector3d(&direction,&result);
+		lp_canvas->lp_camera->pos.x += result.x;
+		lp_canvas->lp_camera->pos.y += result.y;
+		lp_canvas->lp_camera->pos.z += result.z;
+	}
+	static bool lightoff = false;
+	static bool lightable = true;
+	if (KEYDOWN(int('T')))
+	{
+		if (lightable)
+		{
+			if (lightoff)
+			{
+				lp_canvas->LightList[1]->state = Light::LIGHTV1_STATE_ON;
+				lightoff = false;
+			}else{
+				lp_canvas->LightList[1]->state = Light::LIGHTV1_STATE_OFF;
+				lightoff = true;
+			}
+		}
+		lightable = false;		
+	}
+	if (KEYUP(int('T')))
+	{
+		lightable = true;
 	}
 	lp_canvas->lock();
 	lp_canvas->clear();
 	ry+=1;
-	cube.rotationY(ry);
+	//cube.rotationY(ry);
 	lp_canvas->render();
 	lp_canvas->unlock();
 	lp_canvas->flip();
@@ -172,9 +242,9 @@ int Game_Main(void *parms = NULL, int num_parms = 0)
 
 void createLight(){
 	Light *light = NULL;
-	/*light = new Light();
-	light->init(Light::LIGHTV1_STATE_ON,Light::LIGHTV1_ATTR_AMBIENT,_RGB32BIT(0xff,100,100,100),0,0,0,0,0,NULL,NULL,0,0,0);
-	lp_canvas->addLight(light);*/
+	light = new Light();
+	light->init(Light::LIGHTV1_STATE_ON,Light::LIGHTV1_ATTR_AMBIENT,_RGB32BIT(0xff,60,60,60),0,0,0,0,0,NULL,NULL,0,0,0);
+	lp_canvas->addLight(light);
 	//light = new Light();
 	//Vector3d* v = new Vector3d();
 	//v->init(-1,2,-0.5,0);
@@ -194,17 +264,19 @@ void createObject(){
 	cube.init(8,12,1);
 	cube.max_radius = 100;
 	cube.world_pos.z = 500;
-	for (int i = 0;i<cube.init_num_vertexs;i++)
+	for (int i = 0;i<cube.num_vertices;i++)
 	{
 		v = new Vertex3d();
 		v->x = cx[i]*100;
 		v->y = cy[i]*100;
 		v->z = cz[i]*100;
 		v->w = 1;
-		cube.addVertex(v);
+		cube.lp_vertex_local[i] = *v;
+		//lp_vertex_trans[num_vertices] = *v;
+		//cube.addVertex(v);
 		delete v;
 	}
-	for (int j = 0;j<cube.init_num_polys;j++)
+	for (int j = 0;j<cube.num_polys;j++)
 	{
 		Poly* temp = new Poly;
 		temp->v_index_list[0] = index[j*3];
@@ -212,8 +284,7 @@ void createObject(){
 		temp->v_index_list[2] = index[j*3+2];
 		temp->lp_vertex_object = cube.lp_vertex_trans;
 		temp->color = 0xffff0000;
-		cube.lp_polys[cube.num_polys] = *temp;
-		cube.num_polys++;
+		cube.lp_polys[j] = *temp;
 		delete temp;
 		temp = NULL;
 		//cube.addPoly(index[j*3],index[j*3+1],index[j*3+2]);
@@ -226,14 +297,21 @@ int WINAPI WinMain(	HINSTANCE hinstance,
 {
 	lp_canvas = new Canvas();
 	lp_canvas->init(hinstance,WindowProc,SCREEN_WIDTH,SCREEN_HEIGHT,SCREEN_BPP,1);
-	createObject();
+	//createObject();
 	createLight();
-	loadObject_ASC("cube01.asc",&cube,NULL,NULL,NULL);
+	Point3d position;
+	position.init(0,0,500);
+	Vector3d scale;
+	scale.init(30,30,30);
+	Matrix rotation(44);
+	float m[16] = {1,0,0,0,0,0,-1,0,0,1,0,0,0,0,0,1};
+	rotation.init(m);
+	loadObject_ASC("car01.asc",&cube,&position,&scale,&rotation);
 	Camera *camera = new Camera();
 	Vector3d dir;
 	dir.init(0,0,0,1);
 	Point3d pos;
-	pos.init(0,0,-100,1);
+	pos.init(0,150,-100,1);
 	Point3d target;
 	target.init(0,0,0,0);
 

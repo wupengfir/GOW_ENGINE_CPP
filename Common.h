@@ -129,7 +129,7 @@ inline std::string& subStringByBlank(std::string& str,int start_index,std::strin
 	int length = 3;
 	char* buffer = new char[length];
 	char* temp = NULL;
-	while(str[index] != ' '&&index<str.size()){
+	while(index<str.size()&&str[index] != ' '){
 		if (num == length)
 		{
 			length *= 2;
@@ -157,6 +157,13 @@ inline std::string& subStringByBlank(std::string& str,int start_index,std::strin
 	delete buffer;
 	return storage;
 };
+
+inline float stringToNumber(std::string& str){
+	float num = 0;
+	std::stringstream stream(str);
+	stream>>num;
+	return num;
+}
 
 template<typename T> 
 void releaseT(T a) 

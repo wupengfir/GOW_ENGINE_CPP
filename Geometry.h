@@ -109,6 +109,10 @@ public:
 		w = source->w;
 	}
 
+	Point3d(){
+		w = 1;
+	};
+
 };
 
 class Vector3d 
@@ -256,8 +260,8 @@ public:
 	int curr_frame;
 	int num_polys;
 
-	int init_num_polys;
-	int init_num_vertexs;
+	//int init_num_polys;
+	//int init_num_vertexs;
 
 	Vertex3d* lp_vertex_local;
 	Vertex3d* lp_vertex_trans;
@@ -299,11 +303,11 @@ public:
 		return true;
 	};
 
-	inline void addVertex(Vertex3d *v){
-		lp_vertex_local[num_vertices] = *v;
-		lp_vertex_trans[num_vertices] = *v;
-		num_vertices++;
-	};
+	//inline void addVertex(Vertex3d *v){
+	//	lp_vertex_local[num_vertices] = *v;
+	//	lp_vertex_trans[num_vertices] = *v;
+	//	num_vertices++;
+	//};
 
 	inline void addPoly(int p1,int p2,int p3){
 		Poly* temp = new Poly;
