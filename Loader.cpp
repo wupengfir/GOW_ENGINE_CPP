@@ -78,17 +78,47 @@ void loadObject_ASC(char* path,Object3d* obj,Point3d* p_pos,Vector3d* p_scale,Ma
 			vertex_list[i]->pos.y *= p_scale->y;
 			vertex_list[i]->pos.z *= p_scale->z;
 		}
+		obj->lp_vertex_local[i].normal.init(0,0,0,1);
+		obj->lp_vertex_trans[i].normal.init(0,0,0,1);
 		obj->lp_vertex_local[i].pos = vertex_list[i]->pos;
+		obj->lp_vertex_trans[i].pos = vertex_list[i]->pos;
 	}
 	for (i = 0;i<num_poly;i++)
 	{
 		obj->lp_polys[i].v_index_list[0] = (int)pos_List[i]->x;
 		obj->lp_polys[i].v_index_list[1] = (int)pos_List[i]->y;
 		obj->lp_polys[i].v_index_list[2] = (int)pos_List[i]->z;
-		obj->lp_polys[i].color = 0xffffffff;
+		obj->lp_polys[i].color.argb = 0xffffffff;
+		obj->lp_polys[i].attr = POLY4D_ATTR_SHADE_MODE_GOURAUD;
 	}
+	computeVertexNormalVector(obj);
 	delete temp_point;
 	delete temp_vertex;
 	delete tempString;
 	fin.close();
+};
+
+void computeVertexNormalVector(Object3d* obj){
+	if (obj == NULL)
+	{
+		return;
+	}
+	Poly* lp_poly = NULL;
+	Vertex3d* lp_vertex = NULL;
+	for (int i = 0;i<obj->num_polys;i++)
+	{
+		lp_poly = obj->lp_polys + i;
+		lp_poly->calculateNormalVectorWithoutNormallize();
+		lp_vertex = obj->lp_vertex_local + lp_poly->v_index_list[0];
+		lp_vertex->normal.add(&lp_poly->normal_vector,&lp_vertex->normal);
+		lp_vertex = obj->lp_vertex_local + lp_poly->v_index_list[1];
+		lp_vertex->normal.add(&lp_poly->normal_vector,&lp_vertex->normal);
+		lp_vertex = obj->lp_vertex_local + lp_poly->v_index_list[2];
+		lp_vertex->normal.add(&lp_poly->normal_vector,&lp_vertex->normal);
+	}
+	for (int index = 0;index<obj->num_vertices;index++)
+	{
+		lp_vertex = obj->lp_vertex_local + index;
+		normalizeVector3d(&lp_vertex->normal);
+	}
 };

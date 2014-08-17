@@ -4,6 +4,7 @@
 
 class Point3d;
 class Vector3d;
+class Color;
 class Light{
 public:
 	static const int LIGHTV1_ATTR_AMBIENT = 0x0001;
@@ -19,9 +20,9 @@ public:
 	std::string name;
 	int attr;
 
-	UINT c_ambient;
-	UINT c_diffuse;
-	UINT c_specular;
+	Color *c_ambient;
+	Color *c_diffuse;
+	Color *c_specular;
 	Point3d *pos;
 	Vector3d *dir;
 	float kc;
@@ -32,10 +33,10 @@ public:
 	float pf;
 
 	Light(void){};
-	~Light(void){};
+	~Light(void);
 
 	void init(int state,int attr,
-				UINT c_ambient,UINT c_diffuse,UINT c_specular,
+				Color *c_ambient,Color *c_diffuse,Color *c_specular,
 				float kc,float kl,float kq,
 				Point3d* pos,Vector3d* dir,
 				float spot_inner,float spot_outer,float pf);

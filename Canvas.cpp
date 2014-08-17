@@ -236,8 +236,8 @@ void Canvas::render(bool backmove,bool cull){
 		{
 			continue;
 		}
-		lightObject(obj);
-		transformObject(obj,&(lp_camera->mcam),TRANSFORM_TRANS_ONLY,false);
+		lightObject(obj);//光照放在这里是因为要在世界空间处理光照，下面的函数如果加一个flag控制要不要偏转顶点法线，也可以换位置(现在有了)
+		transformObject(obj,&(lp_camera->mcam),TRANSFORM_TRANS_ONLY,false,false);
 		lp_camera->cameraToPerspective_object(obj);
 		lp_camera->perspectiveToScreen_object(obj);
 		Poly* temp;
@@ -259,7 +259,14 @@ void Canvas::render(bool backmove,bool cull){
 			/*drawLine(p1->x,p1->y,p2->x,p2->y,0xff00ffff);
 			drawLine(p2->x,p2->y,p3->x,p3->y,0xff00ffff);
 			drawLine(p3->x,p3->y,p1->x,p1->y,0xff00ffff);*/
-			Draw_Triangle_2D(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,temp->lit_color[0],lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+			if (temp->attr&POLY4D_ATTR_SHADE_MODE_FLAT)
+			{
+				Draw_Triangle_2D(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,temp->lit_color[0].argb,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+			}
+			else if (temp->attr&POLY4D_ATTR_SHADE_MODE_GOURAUD)
+			{
+				Draw_Gouraud_Triangle(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,temp->lit_color[0],temp->lit_color[1],temp->lit_color[2],lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+			}
 		}
 	}
 	
@@ -279,32 +286,38 @@ void Canvas::lightObject(Object3d* obj){
 			r_sum = 0;
 			g_sum = 0;
 			b_sum = 0;
-			for (std::vector<Light*>::size_type i = 0;i!=LightList.size();i++)
+			if (lp_poly->attr&POLY4D_ATTR_SHADE_MODE_PURE)
 			{
-				lp_light = LightList[i];
-				if (lp_light->state == Light::LIGHTV1_STATE_OFF)
+				continue;
+			}
+			else if (lp_poly->attr&POLY4D_ATTR_SHADE_MODE_FLAT)
+			{
+				for (std::vector<Light*>::size_type i = 0;i!=LightList.size();i++)
 				{
-					continue;
-				}
-				r_origin = lp_poly->color>>16&0x000000ff;
-				g_origin = lp_poly->color>>8&0x000000ff;
-				b_origin = lp_poly->color&0x000000ff;
-				switch(lp_light->attr){
+					lp_light = LightList[i];
+					if (lp_light->state == Light::LIGHTV1_STATE_OFF)
+					{
+						continue;
+					}
+					r_origin = lp_poly->color.r;
+					g_origin = lp_poly->color.g;
+					b_origin = lp_poly->color.b;
+					switch(lp_light->attr){
 					case Light::LIGHTV1_ATTR_AMBIENT:
-						r_light = lp_light->c_ambient>>16&0x000000ff;
-						g_light = lp_light->c_ambient>>8&0x000000ff;
-						b_light = lp_light->c_ambient&0x000000ff;
+						r_light = lp_light->c_ambient->r;
+						g_light = lp_light->c_ambient->g;
+						b_light = lp_light->c_ambient->b;
 						r_sum += r_origin*r_light/256;
 						g_sum += g_origin*g_light/256;
 						b_sum += b_origin*b_light/256;
-					break;
+						break;
 					case Light::LIGHTV1_ATTR_INFINITE:
 						dp = lp_light->dir->pointMultiply(&(lp_poly->normal_vector));
 						if (dp>0)
 						{
-							r_light = lp_light->c_diffuse>>16&0x000000ff;
-							g_light = lp_light->c_diffuse>>8&0x000000ff;
-							b_light = lp_light->c_diffuse&0x000000ff;
+							r_light = lp_light->c_diffuse->r;
+							g_light = lp_light->c_diffuse->g;
+							b_light = lp_light->c_diffuse->b;
 							r_sum += r_origin*r_light*dp/256;
 							g_sum += g_origin*g_light*dp/256;
 							b_sum += b_origin*b_light*dp/256;
@@ -318,9 +331,9 @@ void Canvas::lightObject(Object3d* obj){
 						atten = lp_light->kc + lp_light->kl*dist + lp_light->kq*dist*dist;
 						if (dp>0)
 						{
-							r_light = lp_light->c_specular>>16&0x000000ff;
-							g_light = lp_light->c_specular>>8&0x000000ff;
-							b_light = lp_light->c_specular&0x000000ff;
+							r_light = lp_light->c_specular->r;
+							g_light = lp_light->c_specular->g;
+							b_light = lp_light->c_specular->b;
 							r_sum += r_origin*r_light*dp/(256*atten*dist);
 							g_sum += g_origin*g_light*dp/(256*atten*dist);
 							b_sum += b_origin*b_light*dp/(256*atten*dist);
@@ -334,17 +347,93 @@ void Canvas::lightObject(Object3d* obj){
 						atten = lp_light->kc + lp_light->kl*dist + lp_light->kq*dist*dist;
 						if (dp>0)
 						{
-							r_light = lp_light->c_specular>>16&0x000000ff;
-							g_light = lp_light->c_specular>>8&0x000000ff;
-							b_light = lp_light->c_specular&0x000000ff;
+							r_light = lp_light->c_specular->r;
+							g_light = lp_light->c_specular->g;
+							b_light = lp_light->c_specular->b;
 							r_sum += r_origin*r_light*dp/(256*atten*dist);
 							g_sum += g_origin*g_light*dp/(256*atten*dist);
 							b_sum += b_origin*b_light*dp/(256*atten*dist);
 						}						
 						break;
+					}
+				}
+				lp_poly->lit_color[0].argb = _RGB32BIT(0xff,r_sum>255?255:r_sum,g_sum>255?255:g_sum,b_sum>255?255:b_sum);
+			}
+			else if (lp_poly->attr&POLY4D_ATTR_SHADE_MODE_GOURAUD)
+			{
+				for (int index = 0;index<3;index++)
+				{
+					r_sum = 0;
+					g_sum = 0;
+					b_sum = 0;
+					for (std::vector<Light*>::size_type i = 0;i!=LightList.size();i++)
+					{
+						lp_light = LightList[i];
+						if (lp_light->state == Light::LIGHTV1_STATE_OFF)
+						{
+							continue;
+						}
+						r_origin = lp_poly->color.r;
+						g_origin = lp_poly->color.g;
+						b_origin = lp_poly->color.b;
+						switch(lp_light->attr){
+						case Light::LIGHTV1_ATTR_AMBIENT:
+							r_light = lp_light->c_ambient->r;
+							g_light = lp_light->c_ambient->g;
+							b_light = lp_light->c_ambient->b;
+							r_sum += r_origin*r_light/256;
+							g_sum += g_origin*g_light/256;
+							b_sum += b_origin*b_light/256;
+							break;
+						case Light::LIGHTV1_ATTR_INFINITE:
+							dp = lp_light->dir->pointMultiply(&(lp_poly->normal_vector));
+							if (dp>0)
+							{
+								r_light = lp_light->c_diffuse->r;
+								g_light = lp_light->c_diffuse->g;
+								b_light = lp_light->c_diffuse->b;
+								r_sum += r_origin*r_light*dp/256;
+								g_sum += g_origin*g_light*dp/256;
+								b_sum += b_origin*b_light*dp/256;
+							}						
+							break;
+						case Light::LIGHTV1_ATTR_POINT:
+							dist = point_distance(lp_light->pos,&((lp_poly->lp_vertex_object[lp_poly->v_index_list[0]]).pos));
+							light_dir.build(&((lp_poly->lp_vertex_object[lp_poly->v_index_list[0]]).pos),lp_light->pos);
+							normalizeVector3d(&light_dir);
+							dp = light_dir.pointMultiply(&((lp_poly->lp_vertex_object[lp_poly->v_index_list[index]]).normal));
+							atten = lp_light->kc + lp_light->kl*dist + lp_light->kq*dist*dist;
+							if (dp>0)
+							{
+								r_light = lp_light->c_specular->r;
+								g_light = lp_light->c_specular->g;
+								b_light = lp_light->c_specular->b;
+								r_sum += r_origin*r_light*dp/(256*atten*dist);
+								g_sum += g_origin*g_light*dp/(256*atten*dist);
+								b_sum += b_origin*b_light*dp/(256*atten*dist);
+							}						
+							break;
+						case Light::LIGHTV1_ATTR_SPOTLIGHT_SIMPLE:
+							dist = point_distance(lp_light->pos,&((lp_poly->lp_vertex_object[lp_poly->v_index_list[0]]).pos));
+							light_dir.copy(lp_light->dir);
+							normalizeVector3d(&light_dir);
+							dp = light_dir.pointMultiply(&((lp_poly->lp_vertex_object[lp_poly->v_index_list[index]]).normal));
+							atten = lp_light->kc + lp_light->kl*dist + lp_light->kq*dist*dist;
+							if (dp>0)
+							{
+								r_light = lp_light->c_specular->r;
+								g_light = lp_light->c_specular->g;
+								b_light = lp_light->c_specular->b;
+								r_sum += r_origin*r_light*dp/(256*atten*dist);
+								g_sum += g_origin*g_light*dp/(256*atten*dist);
+								b_sum += b_origin*b_light*dp/(256*atten*dist);
+							}						
+							break;
+						}
+					}
+					lp_poly->lit_color[index].argb = _RGB32BIT(0xff,r_sum>255?255:r_sum,g_sum>255?255:g_sum,b_sum>255?255:b_sum);
 				}
 			}
-			lp_poly->lit_color[0] = _RGB32BIT(0xff,r_sum>255?255:r_sum,g_sum>255?255:g_sum,b_sum>255?255:b_sum);
 		}
 
 	}	

@@ -12,6 +12,7 @@
 #define _RGB32BIT(a,r,g,b) ((b) + ((g) << 8) + ((r) << 16) + ((a) << 24))
 #define DD_INIT_STRUCT(ddstruct) { memset(&ddstruct,0,sizeof(ddstruct)); ddstruct.dwSize=sizeof(ddstruct); }
 #define FCMP(a,b) ((a>b?(a-b):(b-a))<0.001)
+#define DELETE_BASETYPE_POINTER(p) {delete p;p = NULL;}
 
 #include <windows.h>   // include important windows stuff
 #include <windowsx.h> 
@@ -67,6 +68,7 @@ extern int min_clip_x,                             // clipping rectangle
 
 class Canvas;
 extern Canvas* lp_canvas;
+
 
 inline void trimString(std::string& str){
 	str.erase(str.find_last_not_of(" ") + 1);

@@ -1,6 +1,6 @@
 #include "Geometry.h"
 
-void transformObject(Object3d* obj,Matrix* m,int type,bool transform_basis){
+void transformObject(Object3d* obj,Matrix* m,int type,bool transform_basis,bool transform_normal){
 	int i = 0;
 	Point3d storage;
 	Vector3d result;
@@ -10,6 +10,11 @@ void transformObject(Object3d* obj,Matrix* m,int type,bool transform_basis){
 		for (i = 0;i<obj->num_vertices;i++)
 		{
 			m->mulPoint3d(&(obj->lp_vertex_local[i].pos),&storage);
+			if (transform_normal)
+			{
+				m->mulVector3d(&(obj->lp_vertex_local[i].normal),&result);
+				obj->lp_vertex_local[i].normal.copy(&result);
+			}			
 			obj->lp_vertex_local[i].pos.copy(&storage);
 		}
 		break;
@@ -17,6 +22,11 @@ void transformObject(Object3d* obj,Matrix* m,int type,bool transform_basis){
 		for (i = 0;i<obj->num_vertices;i++)
 		{
 			m->mulPoint3d(&(obj->lp_vertex_trans[i].pos),&storage);
+			if (transform_normal)
+			{
+				m->mulVector3d(&(obj->lp_vertex_trans[i].normal),&result);
+				obj->lp_vertex_trans[i].normal.copy(&result);
+			}			
 			obj->lp_vertex_trans[i].pos.copy(&storage);
 		}
 		break;
@@ -24,6 +34,11 @@ void transformObject(Object3d* obj,Matrix* m,int type,bool transform_basis){
 		for (i = 0;i<obj->num_vertices;i++)
 		{
 			m->mulPoint3d(&(obj->lp_vertex_local[i].pos),&storage);
+			if (transform_normal)
+			{
+				m->mulVector3d(&(obj->lp_vertex_local[i].normal),&result);
+				obj->lp_vertex_trans[i].normal.copy(&result);
+			}			
 			obj->lp_vertex_trans[i].pos.copy(&storage);
 		}
 		break;
@@ -42,13 +57,13 @@ void transformObject(Object3d* obj,Matrix* m,int type,bool transform_basis){
 Matrix::Matrix(int type){
 	width = type%10;
 	height = type/10;
-	lp_data = new std::vector<float>(width*height);
+	//lp_data = new std::vector<float>(width*height);
 };
 
 void  Matrix::init(float* data){
 	for (int i = 0;i<width*height;i++)
 	{
-		(*lp_data)[i] = data[i];
+		lp_data[i] = data[i];
 	}
 };
 
@@ -69,9 +84,9 @@ int Matrix::multiply(Matrix* m,Matrix* storage){
 			temp = 0;
 			for(int k = 0;k<width;k++)
 			{
-				temp += (*lp_data)[i*width + k] * (*(m->lp_data))[k*m->width + j];
+				temp += lp_data[i*width + k] * (m->lp_data)[k*m->width + j];
 			}
-			(*(storage->lp_data))[i*m->width + j] = temp;
+			(storage->lp_data)[i*m->width + j] = temp;
 		}
 	}
 	return 1;
@@ -84,7 +99,7 @@ int Matrix::mulVector3d(Vector3d* vec,Vector3d* storage){
 		temp = 0;
 		for(int k = 0;k<4;k++)
 		{
-			temp += (vec->M)[k] * (*lp_data)[k*width + j];
+			temp += (vec->M)[k] * lp_data[k*width + j];
 		}
 		(storage->M)[j] = temp;
 	}
@@ -98,7 +113,7 @@ int Matrix::mulPoint3d(Point3d* vec,Point3d* storage){
 		temp = 0;
 		for(int k = 0;k<4;k++)
 		{
-			temp += (vec->M)[k] * (*lp_data)[k*width + j];
+			temp += (vec->M)[k] * lp_data[k*width + j];
 		}
 		(storage->M)[j] = temp;
 	}
@@ -106,24 +121,25 @@ int Matrix::mulPoint3d(Point3d* vec,Point3d* storage){
 }
 
 void Matrix::setZero(){
-	for (size_t i = 0;i<lp_data->size();i++)
+	for (size_t i = 0;i<width*height;i++)
 	{
-		(*lp_data)[i] = 0;
+		lp_data[i] = 0;
 	}
 }
 
 void Matrix::identify(){
-	for (size_t i = 0;i<lp_data->size();i++)
+	for (size_t i = 0;i<width*height;i++)
 	{
-		(*lp_data)[i] = 0;
+		lp_data[i] = 0;
 	}
 	for (int j = 0;j<width;j++)
 	{
-		(*lp_data)[j*width + j] = 1;
+		lp_data[j*width + j] = 1;
 	}
 }
 
 Matrix::~Matrix(){
+	//delete lp_data;
 };
 
 Object3d::Object3d(){
@@ -133,15 +149,15 @@ Object3d::Object3d(){
 void Object3d::rotationY(float deg){
 	float rad = DEG_TO_RAD(deg - ry);
 	ry = deg;
-	Matrix *mx = new Matrix(44);
+	Matrix mx(44);
 	float cos_t = cos(rad);
 	float sin_t = sin(rad);
 	float y_data[16] = {cos_t,0,-sin_t,0,
 		0,1,0,0,
 		sin_t,0,cos_t,0,
 		0,0,0,1};
-	mx->init(y_data);
-	transformObject(this,mx,TRANSFORM_LOCAL_ONLY,false);
+	mx.init(y_data);
+	transformObject(this,&mx,TRANSFORM_LOCAL_ONLY,false,true);
 };
 
 void Object3d::scale(float sx,float sy,float sz){

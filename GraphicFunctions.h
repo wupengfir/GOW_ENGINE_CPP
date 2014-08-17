@@ -1,6 +1,7 @@
 #pragma once
 #include "Common.h"
 
+class Color;
 int drawLine(int x0, int y0, int x1, int y1, UINT color);
 int Clip_Line(int &x1,int &y1,int &x2, int &y2);
 void Draw_Triangle_2D(float x1,float y1,
@@ -17,4 +18,22 @@ void Draw_Bottom_Tri(float x1,float y1,
 	float x2,float y2, 
 	float x3,float y3,
 	int color,
+	UCHAR *dest_buffer, int mempitch);
+
+void Draw_Gouraud_Triangle(float x1,float y1,
+	float x2,float y2,
+	float x3,float y3,
+	Color color0,Color color1,Color color2,
+	UCHAR *dest_buffer, int mempitch);
+
+void Draw_bottom_Gouraud_Triangle(float x1,float y1,
+	float x2,float y2,
+	float x3,float y3,
+	Color color0,Color color1,Color color2,
+	UCHAR *dest_buffer, int mempitch);
+
+void Draw_top_Gouraud_Triangle(float x1,float y1,
+	float x2,float y2,
+	float x3,float y3,
+	Color color0,Color color1,Color color2,
 	UCHAR *dest_buffer, int mempitch);

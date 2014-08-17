@@ -17,7 +17,7 @@ Object3d cube;
 float cx[8] = {-1,-1,1,1,-1,1,1,-1};
 float cy[8] = {-1,-1,-1,-1,1,1,1,1};
 float cz[8] = {0,2,0,2,0,0,2,2};
-int index[36] = {2,3,1,2,1,0,4,5,2,4,2,0,6,3,2,6,2,5,6,7,1,6,1,3,6,5,4,6,4,7,1,7,4,1,4,0};
+int index[36] = {4,2,0,6,3,2,6,2,5,6,7,1,6,1,3,6,5,4,6,4,7,1,7,4,1,4,0};
 bool moveback = false;
 bool moveright = false;
 bool moveleft = false;
@@ -231,7 +231,15 @@ int Game_Main(void *parms = NULL, int num_parms = 0)
 	lp_canvas->lock();
 	lp_canvas->clear();
 	ry+=1;
-	//cube.rotationY(ry);
+	cube.rotationY(ry);
+	////////////////////////////////
+	//Color *test_color = new Color[3];
+	//test_color[0].init(0xffff2233);
+	//test_color[1].init(0xff22ff33);
+	//test_color[2].init(0xff2233ff);
+	//Draw_Gouraud_Triangle(100,100,100,300,200,300,test_color[0],test_color[1],test_color[2],lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+	//Draw_Gouraud_Triangle(100,450,100,300,200,300,test_color[0],test_color[1],test_color[2],lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+	////////////////////////////////
 	lp_canvas->render();
 	lp_canvas->unlock();
 	lp_canvas->flip();
@@ -242,26 +250,29 @@ int Game_Main(void *parms = NULL, int num_parms = 0)
 
 void createLight(){
 	Light *light = NULL;
+
 	light = new Light();
-	light->init(Light::LIGHTV1_STATE_ON,Light::LIGHTV1_ATTR_AMBIENT,_RGB32BIT(0xff,60,60,60),0,0,0,0,0,NULL,NULL,0,0,0);
+	light->init(Light::LIGHTV1_STATE_ON,Light::LIGHTV1_ATTR_AMBIENT,(new Color())->init(_RGB32BIT(0xff,60,60,60)),0,0,0,0,0,NULL,NULL,0,0,0);
 	lp_canvas->addLight(light);
-	//light = new Light();
-	//Vector3d* v = new Vector3d();
-	//v->init(-1,2,-0.5,0);
-	//normalizeVector3d(v);
-	//light->init(Light::LIGHTV1_STATE_ON,Light::LIGHTV1_ATTR_INFINITE,0,_RGB32BIT(0xff,100,100,200),0,0,0,0,NULL,v,0,0,0);
-	//lp_canvas->addLight(light);
+
 	light = new Light();
-	Point3d* v = new Point3d();
-	v->init(0,1000,0);
-	light->init(Light::LIGHTV1_STATE_ON,Light::LIGHTV1_ATTR_POINT,0,0,_RGB32BIT(0xff,100,100,200),0.001,0,0,v,NULL,0,0,0);
+	Vector3d* v = new Vector3d();
+	v->init(-1,2,-0.5,0);
+	normalizeVector3d(v);
+	light->init(Light::LIGHTV1_STATE_ON,Light::LIGHTV1_ATTR_INFINITE,0,(new Color())->init(_RGB32BIT(0xff,100,200,100)),0,0,0,0,NULL,v,0,0,0);
+	lp_canvas->addLight(light);
+
+	light = new Light();
+	Point3d* p = new Point3d();
+	p->init(0,1000,0);
+	light->init(Light::LIGHTV1_STATE_ON,Light::LIGHTV1_ATTR_POINT,0,0,(new Color())->init(_RGB32BIT(0xff,100,100,200)),0.001,0,0,p,NULL,0,0,0);
 	lp_canvas->addLight(light);
 }
 
 void createObject(){
 	Vertex3d *v = NULL;
 	Poly *p = NULL;
-	cube.init(8,12,1);
+	cube.init(8,1,1);
 	cube.max_radius = 100;
 	cube.world_pos.z = 500;
 	for (int i = 0;i<cube.num_vertices;i++)
@@ -283,7 +294,8 @@ void createObject(){
 		temp->v_index_list[1] = index[j*3+1];
 		temp->v_index_list[2] = index[j*3+2];
 		temp->lp_vertex_object = cube.lp_vertex_trans;
-		temp->color = 0xffff0000;
+		temp->attr = POLY4D_ATTR_SHADE_MODE_GOURAUD;
+		temp->color.argb = 0xffffffff;
 		cube.lp_polys[j] = *temp;
 		delete temp;
 		temp = NULL;
@@ -302,7 +314,8 @@ int WINAPI WinMain(	HINSTANCE hinstance,
 	Point3d position;
 	position.init(0,0,500);
 	Vector3d scale;
-	scale.init(30,30,30);
+
+	scale.init(100,100,100);
 	Matrix rotation(44);
 	float m[16] = {1,0,0,0,0,0,-1,0,0,1,0,0,0,0,0,1};
 	rotation.init(m);

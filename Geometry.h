@@ -58,12 +58,39 @@ class Vector3d;
 class Object3d;
 class Point3d;
 class Matrix;
+class Color;
 inline void vector3dCopy(Vector3d* vdst, Vector3d* vsrc);
 inline void vector3dInit(Vector3d* vdst);
 inline float vector3dLengthFast(Vector3d* va);
 inline void normalizeVector3d(Vector3d* v);
 inline float point_distance(Point3d* p1,Point3d* p2);
-void transformObject(Object3d* obj,Matrix* m,int type,bool transform_basis);
+void transformObject(Object3d* obj,Matrix* m,int type,bool transform_basis,bool transform_normal);
+
+class Color{
+public:
+	union{
+		UINT argb;
+		UCHAR M[4];
+		struct{
+			UCHAR b;
+			UCHAR g;
+			UCHAR r;
+			UCHAR a;
+		};
+	};
+	inline Color* init(UINT cr,UINT cg,UINT cb,UINT ca = 0xff){
+		a = ca;
+		r = cr;
+		g = cg;
+		b = cb;
+		return this;
+	}; 
+
+	inline Color* init(UINT argb){
+		this->argb = argb;
+		return this;
+	}; 
+};
 
 class Point2d 
 {
@@ -134,6 +161,12 @@ public:
 		w = vw;
 	};
 
+	inline void add(Vector3d* target,Vector3d* storage){
+		storage->x = x + target->x;
+		storage->y = y + target->y;
+		storage->z = z + target->z;
+	};
+
 	inline void cross(Vector3d* target,Vector3d* storage){
 		storage->x = y*target->z-z*target->y;
 		storage->y = target->x*z - x*target->z;
@@ -167,7 +200,7 @@ public:
 			float x,y,z,w;
 			float nx,ny,nz,nw;
 			float tx,ty;
-			UINT color;
+			Color color;
 			int attr;
 		};
 		struct{
@@ -183,8 +216,8 @@ class Poly{
 public:
 	int state;
 	int attr;
-	UINT color;
-	UINT lit_color[3];
+	Color color;
+	Color lit_color[3];
 
 	int matrial_index;
 	float normal_length;
@@ -213,6 +246,12 @@ public:
 
 	inline void calculateNormalVector(){
 
+		calculateNormalVectorWithoutNormallize();
+		normalizeVector3d(&normal_vector);
+	}
+
+	inline  void calculateNormalVectorWithoutNormallize(){
+
 		float x1 = lp_vertex_object[v_index_list[1]].x-lp_vertex_object[v_index_list[0]].x;
 		float y1 = lp_vertex_object[v_index_list[1]].y-lp_vertex_object[v_index_list[0]].y;
 		float z1 = lp_vertex_object[v_index_list[1]].z-lp_vertex_object[v_index_list[0]].z;
@@ -229,8 +268,6 @@ public:
 		normal_vector.y = u.z*v.x-u.x*v.z;
 		normal_vector.z = u.x*v.y-v.x*u.y;
 		normal_vector.w = 1;
-
-		normalizeVector3d(&normal_vector);
 	}
 
 };
@@ -285,6 +322,7 @@ public:
 			for (int i = 0;i<num_vertices;i++)
 			{
 				lp_vertex_local[i].pos.add(&world_pos,&(lp_vertex_trans[i].pos));
+				lp_vertex_trans[i].normal.copy(&(lp_vertex_local[i].normal));
 			}
 		} 
 		else if(type == TRANSFORM_TRANS_ONLY)
@@ -332,7 +370,7 @@ public:
 	//						0,sin_t,cos_t,0,
 	//						0,0,0,1};
 	//	mx.init(x_data);
-	//	transformObject(this,&mx,TRANSFORM_LOCAL_ONLY,false);
+	//	transformObject(this,&mx,TRANSFORM_LOCAL_ONLY,false,true);
 	//};
 
 	void rotationY(float deg);
@@ -348,7 +386,7 @@ public:
 	//						0,0,1,0,
 	//						0,0,0,1};
 	//	mx.init(z_data);
-	//	transformObject(this,&mx,TRANSFORM_LOCAL_ONLY,false);
+	//	transformObject(this,&mx,TRANSFORM_LOCAL_ONLY,false,true);
 	//};
 
 };
@@ -380,7 +418,8 @@ class Matrix{
 public:
 	int width;
 	int height;
-	std::vector<float>* lp_data;
+	//这里要改用数组静态分配内存，记着
+	float lp_data[16];
 
 	int multiply(Matrix* m,Matrix* storage);
 	int mulVector3d(Vector3d* vec,Vector3d* storage);
