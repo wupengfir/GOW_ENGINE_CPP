@@ -1,6 +1,31 @@
 #include "GraphicFunctions.h"
 
+int Draw_Text_GDI(char *text, int x,int y,COLORREF color)
+{
+	// this function draws the sent text on the sent surface 
+	// using color index as the color in the palette
 
+	HDC xdc; // the working dc
+
+	// get the dc from surface
+	if (FAILED(lp_canvas->lp_back_surface->GetDC(&xdc)))
+		return(0);
+
+	// set the colors for the text up
+	SetTextColor(xdc,color);
+
+	// set background mode to transparent so black isn't copied
+	SetBkMode(xdc, TRANSPARENT);
+
+	// draw the text a
+	TextOut(xdc,x,y,text,strlen(text));
+
+	// release the dc
+	lp_canvas->lp_back_surface->ReleaseDC(xdc);
+
+	// return success
+	return(1);
+}
 
 int drawLine(int x0, int y0, int x1, int y1, UINT color)
 {
@@ -600,14 +625,16 @@ void Draw_bottom_Gouraud_Triangle(float x1,float y1, float x2,float y2, float x3
 		SWAP(x2,x3,tx);
 		SWAP(color1.argb,color2.argb,t_color);
 	}
-	left = (x2-x1)/(y2-y1);
-	right = (x3-x1)/(y3-y1);
-	dr_left = (color1.r - color0.r)/(y2-y1);
-	dg_left = (color1.g - color0.g)/(y2-y1);
-	db_left = (color1.b - color0.b)/(y2-y1);
-	dr_right = (color2.r - color0.r)/(y2-y1);
-	dg_right = (color2.g - color0.g)/(y2-y1);
-	db_right = (color2.b - color0.b)/(y2-y1);
+	float y21 = 1/(y2-y1);
+	float y31 = 1/(y3-y1);
+	left = (x2-x1)*y21;
+	right = (x3-x1)*y31;
+	dr_left = (color1.r - color0.r)*y21;
+	dg_left = (color1.g - color0.g)*y21;
+	db_left = (color1.b - color0.b)*y21;
+	dr_right = (color2.r - color0.r)*y31;
+	dg_right = (color2.g - color0.g)*y31;
+	db_right = (color2.b - color0.b)*y31;
 	rs = color0.r;gs = color0.g;bs = color0.b;
 	rd = color0.r;gd = color0.g;bd = color0.b;
 	xs = x1;
@@ -727,17 +754,19 @@ void Draw_top_Gouraud_Triangle(float x1,float y1, float x2,float y2, float x3,fl
 		SWAP(x2,x3,tx);
 		SWAP(color1.argb,color2.argb,t_color);
 	}
-
-	left = (x2-x1)/(y2-y1);
-	right = (x3-x1)/(y3-y1);
+	//这两个数其实一样的。。。y2 == y3
+	float y21 = 1/(y2-y1);
+	float y31 = 1/(y3-y1);
+	left = (x2-x1)*y21;
+	right = (x3-x1)*y31;
 	xs = x1;
 	xe = x1;
-	dr_left = (color0.r - color1.r)/(y2-y1);
-	dg_left = (color0.g - color1.g)/(y2-y1);
-	db_left = (color0.b - color1.b)/(y2-y1);
-	dr_right = (color0.r - color2.r)/(y2-y1);
-	dg_right = (color0.g - color2.g)/(y2-y1);
-	db_right = (color0.b - color2.b)/(y2-y1);
+	dr_left = (color0.r - color1.r)*y21;
+	dg_left = (color0.g - color1.g)*y21;
+	db_left = (color0.b - color1.b)*y21;
+	dr_right = (color0.r - color2.r)*y31;
+	dg_right = (color0.g - color2.g)*y31;
+	db_right = (color0.b - color2.b)*y31;
 	rs = color0.r;gs = color0.g;bs = color0.b;
 	rd = color0.r;gd = color0.g;bd = color0.b;
 	if (y1>=max_clip_y)
@@ -818,17 +847,18 @@ void Draw_top_Gouraud_Triangle(float x1,float y1, float x2,float y2, float x3,fl
 			}
 			if (clip_xs<min_clip_x)
 			{
-				clip_xs = min_clip_x;
 				rs += (min_clip_x - clip_xs)*dr_left;
 				gs += (min_clip_x - clip_xs)*dg_left;
 				bs += (min_clip_x - clip_xs)*db_left;
+				clip_xs = min_clip_x;
+				
 			}
 			if (clip_xe>max_clip_x)
 			{
-				clip_xe = max_clip_x;
 				rd -= (clip_xe - max_clip_x)*dr_right;
 				gd -= (clip_xe - max_clip_x)*dg_right;
 				bd -= (clip_xe - max_clip_x)*db_right;
+				clip_xe = max_clip_x;				
 			}
 			dx = clip_xe - clip_xs + 1;
 			ixs = clip_xs;
@@ -843,3 +873,310 @@ void Draw_top_Gouraud_Triangle(float x1,float y1, float x2,float y2, float x3,fl
 	}
 };
 
+void drawTextureTriangle(Vertex3d *v1,Vertex3d *v2,Vertex3d *v3,BitmapData *texture,UCHAR *dest_buffer,int mempitch){
+	Vertex3d *tv;
+	if(v2->y<v1->y){
+		SWAP(v1,v2,tv); 
+	}
+	if (v3->y<v2->y)
+	{
+		SWAP(v2,v3,tv);
+	}
+	if(v2->y<v1->y){
+		SWAP(v1,v2,tv);
+	}
+
+	if (FCMP(v2->y,v3->y))
+	{
+		drawBottomTextureTriangle(v1,v2,v3,texture,dest_buffer,mempitch);
+		return;
+	}
+	if (FCMP(v1->y,v2->y))
+	{
+		drawTopTextureTriangle(v3,v1,v2,texture,dest_buffer,mempitch);
+		return;
+	}
+	Vertex3d temp1;
+	Vertex3d temp2;
+	temp1.x = (v2->y-v1->y)*(v3->x-v1->x)/(v3->y-v1->y)+v1->x;
+	temp1.y = v2->y;
+	temp1.ty = (v2->y-v1->y)*(v3->ty-v1->ty)/(v3->y-v1->y)+v1->ty;
+	temp1.tx = (v2->y-v1->y)*(v3->tx-v1->tx)/(v3->y-v1->y)+v1->tx;
+	temp2 = temp1;
+	drawBottomTextureTriangle(v1,v2,&temp1,texture,dest_buffer,mempitch);
+	drawTopTextureTriangle(v3,&temp2,v2,texture,dest_buffer,mempitch);
+};
+
+void drawBottomTextureTriangle(Vertex3d *v1,Vertex3d *v2,Vertex3d *v3,BitmapData *texture,UCHAR *dest_buffer, int mempitch){
+	Vertex3d *tv;
+	if (v3->x<v2->x)
+	{
+		SWAP(v2,v3,tv);
+	}
+	float x1 = v1->x;
+	float x2 = v2->x;
+	float x3 = v3->x;
+	float y1 = v1->y;
+	float y2 = v2->y;
+	float y3 = v3->y;
+	float dtx_left,dtx_right,dty_left,dty_right;
+	float txs,txe,tys,tye;
+	float left,right,xs,xe;
+	int iy1,iy3,loopy,loopx;
+	UINT* lp_buffer = (UINT*)dest_buffer;
+	UINT* lp_addr = NULL;
+	mempitch = mempitch>>2;
+	float y21 = 1/(y2-y1);
+	left = (x2-x1)*y21;
+	right = (x3-x1)*y21;
+	dtx_left = (v2->tx - v1->tx)*y21;
+	dtx_right = (v3->tx - v1->tx)*y21;
+	dty_left = (v2->ty - v1->ty)*y21;
+	dty_right = (v3->ty - v1->ty)*y21;
+	xs = x1;
+	xe = x1;
+	txs = v1->tx;
+	txe = v1->tx;
+	tys = v1->ty;
+	tye = v1->ty;
+	if (y1<=min_clip_y)
+	{
+		xs += (min_clip_y - y1)*left;
+		xe += (min_clip_y - y1)*right;
+		txs += (min_clip_y - y1)*dtx_left;
+		txe += (min_clip_y - y1)*dtx_right;
+		tys += (min_clip_y - y1)*dty_left;
+		tye += (min_clip_y - y1)*dty_right;
+		y1 = min_clip_y;
+		iy1 = y1;
+	} 
+	else
+	{
+		iy1 = ceil(y1);
+		xs += (iy1 - y1)*left;
+		xe += (iy1 - y1)*right;
+	}
+	if (y3>=max_clip_y)
+	{
+		y3 = max_clip_y;
+		iy3 = max_clip_y - 1;
+	} 
+	else
+	{
+		iy3 = ceil(y3) - 1;
+	}
+	lp_addr = lp_buffer + iy1*mempitch;
+	int ixs;
+	int texture_x;
+	int texture_y;
+	float dx;
+	float tx_step;
+	float ty_step;
+	UINT final_color;
+	if(x1>=min_clip_x&&x1<=max_clip_x&&x2>=min_clip_x&&x2<=max_clip_x&&x3>=min_clip_x&&x3<=max_clip_x){
+		for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch)
+		{
+			dx = xe - xs + 1;
+			tx_step = (txe - txs)/dx;
+			ty_step = (tye - tys)/dx;
+			ixs = xs;
+			for (loopx = 0;loopx<(int)dx;loopx++)
+			{
+				texture_x = (txs + loopx*tx_step)*texture->width;
+				texture_y = (tys + loopx*ty_step)*texture->height;
+				final_color = texture->data[(texture_y<<texture->power_of_two)+texture_x].argb;
+				Mem_Set_QUAD(lp_addr+ixs+loopx,final_color,1);
+			}
+			xs += left;
+			xe += right;
+			txs += dtx_left;
+			txe += dtx_right;
+			tys += dty_left;
+			tye += dty_right;
+		}
+	}else{
+		float clip_xs,clip_xe;
+
+		for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch)
+		{
+			clip_xe = xe;
+			clip_xs = xs;
+			xs += left;
+			xe += right;
+			txs += dtx_left;
+			txe += dtx_right;
+			tys += dty_left;
+			tye += dty_right;
+			tx_step = (txe - txs)/(clip_xe - clip_xs);
+			ty_step = (tye - tys)/(clip_xe - clip_xs);
+			if (clip_xe<min_clip_x)
+			{
+				continue;
+			}
+			if (clip_xs>max_clip_x)
+			{
+				continue;
+			}
+			if (clip_xs<min_clip_x)
+			{				
+				txs += (min_clip_x - clip_xs)*tx_step;
+				tys += (min_clip_x - clip_xs)*ty_step;
+				clip_xs = min_clip_x;
+			}
+			if (clip_xe>max_clip_x)
+			{				
+				txs -= (clip_xe - max_clip_x)*tx_step;
+				tys -= (clip_xe - max_clip_x)*ty_step;
+				clip_xe = max_clip_x;
+			}
+			dx = clip_xe - clip_xs + 1;
+			ixs = clip_xs;
+			
+			for (loopx = 0;loopx<(int)dx;loopx++)
+			{
+				texture_x = (txs + loopx*tx_step)*texture->width;
+				texture_y = (tys + loopx*ty_step)*texture->height;
+				final_color = texture->data[(texture_y<<texture->power_of_two)+texture_x].argb;
+				Mem_Set_QUAD(lp_addr+ixs+loopx,final_color,1);
+			}
+		}		
+	}
+};
+
+void drawTopTextureTriangle(Vertex3d *v1,Vertex3d *v2,Vertex3d *v3,BitmapData *texture,UCHAR *dest_buffer, int mempitch){
+	Vertex3d *tv;
+	if (v3->x<v2->x)
+	{
+		SWAP(v2,v3,tv);
+	}
+	float x1 = v1->x;
+	float x2 = v2->x;
+	float x3 = v3->x;
+	float y1 = v1->y;
+	float y2 = v2->y;
+	float y3 = v3->y;
+	float dtx_left,dtx_right,dty_left,dty_right;
+	float txs,txe,tys,tye;
+	float left,right,xs,xe;
+	int iy1,iy3,loopy,loopx;
+	UINT* lp_buffer = (UINT*)dest_buffer;
+	UINT* lp_addr = NULL;
+	mempitch = mempitch>>2;
+	float y21 = 1/(y2-y1);
+	left = (x2-x1)*y21;
+	right = (x3-x1)*y21;
+	xs = x1;
+	xe = x1;
+
+	dtx_left = -(v2->tx - v1->tx)*y21;
+	dtx_right = -(v3->tx - v1->tx)*y21;
+	dty_left = -(v2->ty - v1->ty)*y21;
+	dty_right = -(v3->ty - v1->ty)*y21;
+	txs = v1->tx;
+	txe = v1->tx;
+	tys = v1->ty;
+	tye = v1->ty;
+
+	if (y1>=max_clip_y)
+	{
+		xs += (max_clip_y - y1)*left;
+		xe += (max_clip_y - y1)*right;
+		txs -= (max_clip_y - y1)*dtx_left;
+		txe -= (max_clip_y - y1)*dtx_right;
+		tys -= (max_clip_y - y1)*dty_left;
+		tye -= (max_clip_y - y1)*dty_right;
+		y1 = max_clip_y;
+		iy1 = y1;
+	} 
+	else
+	{
+		iy1 = floor(y1);
+		xs += (iy1 - y1)*left;
+		xe += (iy1 - y1)*right;
+	}
+	if (y3<=min_clip_y)
+	{
+		y3 = min_clip_y;
+		iy3 = min_clip_y;
+	} 
+	else
+	{
+		iy3 = ceil(y3);
+	}
+	lp_addr = lp_buffer + iy1*mempitch;
+	int ixs;
+	int texture_x;
+	int texture_y;
+	float loopx_dx,dx;
+	float tx_step;
+	float ty_step;
+	UINT final_color;
+	if(x1>=min_clip_x&&x1<=max_clip_x&&x2>=min_clip_x&&x2<=max_clip_x&&x3>=min_clip_x&&x3<=max_clip_x){
+		for (loopy = iy1;loopy>=iy3;loopy--,lp_addr-=mempitch)
+		{
+			dx = xe - xs + 1;
+			tx_step = (txe - txs)/dx;
+			ty_step = (tye - tys)/dx;
+			ixs = xs;
+			for (loopx = 0;loopx<(int)dx;loopx++)
+			{
+				texture_x = (txs + loopx*tx_step)*texture->width;
+				texture_y = (tys + loopx*ty_step)*texture->height;
+				final_color = texture->data[(texture_y<<texture->power_of_two)+texture_x].argb;
+				Mem_Set_QUAD(lp_addr+ixs+loopx,final_color,1);
+			}
+			xs -= left;
+			xe -= right;
+			txs += dtx_left;
+			txe += dtx_right;
+			tys += dty_left;
+			tye += dty_right;
+		}
+	}else{
+		float clip_xs,clip_xe;
+
+		for (loopy = iy1;loopy>=iy3;loopy--,lp_addr-=mempitch)
+		{
+			clip_xe = xe;
+			clip_xs = xs;
+			xs -= left;
+			xe -= right;
+			txs += dtx_left;
+			txe += dtx_right;
+			tys += dty_left;
+			tye += dty_right;
+			tx_step = (txe - txs)/(clip_xe - clip_xs);
+			ty_step = (tye - tys)/(clip_xe - clip_xs);
+			if (clip_xe<min_clip_x)
+			{
+				continue;
+			}
+			if (clip_xs>max_clip_x)
+			{
+				continue;
+			}
+			if (clip_xs<min_clip_x)
+			{
+				txs += (min_clip_x - clip_xs)*tx_step;
+				tys += (min_clip_x - clip_xs)*ty_step;
+				clip_xs = min_clip_x;
+
+			}
+			if (clip_xe>max_clip_x)
+			{
+				txs -= (clip_xe - max_clip_x)*tx_step;
+				tys -= (clip_xe - max_clip_x)*ty_step;
+				clip_xe = max_clip_x;				
+			}
+			dx = clip_xe - clip_xs + 1;
+			ixs = clip_xs;
+			for (loopx = 0;loopx<(int)dx;loopx++)
+			{
+				texture_x = (txs + loopx*tx_step)*texture->width;
+				texture_y = (tys + loopx*ty_step)*texture->height;
+				final_color = texture->data[(texture_y<<texture->power_of_two)+texture_x].argb;
+				Mem_Set_QUAD(lp_addr+ixs+loopx,final_color,1);
+			}
+		}		
+	}
+};

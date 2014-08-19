@@ -37,7 +37,7 @@
 //#include "GraphicFunctions.h"
 //#include "Geometry.h"
 //#include "Render.h"
-
+#pragma comment( lib,"winmm.lib" )
 #pragma comment(lib,"ddraw.lib")
 // DEFINES ////////////////////////////////////////////////
 
@@ -166,6 +166,13 @@ inline float stringToNumber(std::string& str){
 	stream>>num;
 	return num;
 }
+//template<typename T> 
+//inline std::string numberToString(T a){
+//	std::string s;
+//	std::stringstream stream(T);
+//	stream>>s;
+//	return s;
+//};
 
 template<typename T> 
 void releaseT(T a) 

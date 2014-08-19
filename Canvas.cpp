@@ -113,7 +113,7 @@ void Canvas::init(HINSTANCE hinstance,WNDPROC callback,int width,int height,int 
 	{
 		main_handler =  CreateWindowEx(NULL,                  // extended style
 			WINDOW_CLASS_NAME,     // class
-			"DirectDraw Full-Screen Demo", // title
+			"Demo", // title
 			WS_OVERLAPPED | WS_VISIBLE,
 			0,0,	  // initial x,y
 			width,height,  // initial width, height
@@ -438,6 +438,53 @@ void Canvas::lightObject(Object3d* obj){
 
 	}	
 };
+
+void Canvas::showImage(BitmapData* bitmapdata,int x,int y){
+	int pos_x = x,pos_y = y;
+	int sx = 0,sy = 0,ex = bitmapdata->width,ey = bitmapdata->height;
+	if (x>max_clip_x||(x+bitmapdata->width)<min_clip_x||y>max_clip_y||(y+bitmapdata->height)<min_clip_y)
+	{
+		return;
+	}
+	if (x<min_clip_x)
+	{
+		sx = min_clip_x - x;
+		pos_x = 0;
+	}
+	if (y<min_clip_y)
+	{
+		sy = min_clip_y - y;
+		pos_y = 0;
+	}
+	if ((bitmapdata->width + pos_x)>max_clip_x)
+	{
+		ex = 2*bitmapdata->width - max_clip_x - pos_x;
+	}
+	if ((bitmapdata->height + pos_y)>max_clip_y)
+	{
+		ey = 2*bitmapdata->height - max_clip_y - pos_y;
+	}
+	if (bitmapdata->power_of_two != -1)
+	{
+		for (int i = sy;i<ey;i++)
+		{
+			for (int j = sx;j<ex;j++)
+			{
+				plotPixel(pos_x + j,pos_y + i,bitmapdata->data[(i<<bitmapdata->power_of_two) + j].argb);
+			}
+		}
+	}
+	else{
+		for (int i = sy;i<ey;i++)
+		{
+			for (int j = sx;j<ex;j++)
+			{
+				plotPixel(pos_x + j,pos_y + i,bitmapdata->data[i*bitmapdata->width + ex].argb);
+			}
+		}
+	}
+};
+
 
 Canvas::~Canvas(void)
 {

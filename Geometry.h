@@ -90,6 +90,10 @@ public:
 		this->argb = argb;
 		return this;
 	}; 
+
+	Color(){
+		argb = 0;
+	};
 };
 
 class Point2d 
@@ -297,6 +301,7 @@ public:
 	int curr_frame;
 	int num_polys;
 
+	Point2d* texture_position_list;
 	//int init_num_polys;
 	//int init_num_vertexs;
 
@@ -323,6 +328,8 @@ public:
 			{
 				lp_vertex_local[i].pos.add(&world_pos,&(lp_vertex_trans[i].pos));
 				lp_vertex_trans[i].normal.copy(&(lp_vertex_local[i].normal));
+				lp_vertex_trans[i].tx = lp_vertex_local[i].tx;
+				lp_vertex_trans[i].ty = lp_vertex_local[i].ty;
 			}
 		} 
 		else if(type == TRANSFORM_TRANS_ONLY)

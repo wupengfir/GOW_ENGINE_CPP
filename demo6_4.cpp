@@ -5,12 +5,9 @@
 LPDIRECTDRAWCLIPPER   lpddclipper  = NULL;   // dd clipper
 DDBLTFX               ddbltfx;               // used to fill
 HRESULT               ddrval;                // result back from dd calls
-DWORD                 start_clock_count = 0; // used for timing
 
 
-char buffer[80];                     // general printing buffer
 Canvas *lp_canvas = NULL;
-
 bool closed = false;
 
 Object3d cube;
@@ -33,10 +30,8 @@ bool turnleft = false;
 //int index[6] = {2,3,1,2,1,0};
 
 // FUNCTIONS //////////////////////////////////////////////
-LRESULT CALLBACK WindowProc(HWND hwnd, 
-						    UINT msg, 
-                            WPARAM wparam, 
-                            LPARAM lparam)
+char buffer[128];
+LRESULT CALLBACK WindowProc(HWND hwnd,UINT msg, WPARAM wparam, LPARAM lparam)
 {
 // this is the main message handler of the system
 PAINTSTRUCT		ps;		// used in WM_PAINT
@@ -124,8 +119,19 @@ void checkKey(){
 }
 
 float ry = 0;
+UINT start_clock = 0;
+BitmapData image;
+int fps = 0;
+int fps_show = 0;
+int second = 0;
 int Game_Main(void *parms = NULL, int num_parms = 0)
 {
+	int current_clock = timeGetTime();
+	if ((current_clock - start_clock) < 30)
+	{
+		return 1;
+	}
+	start_clock = current_clock;
 	Vector3d direction;
 	Vector3d result;
 	direction.init(0,0,0,1);
@@ -228,6 +234,8 @@ int Game_Main(void *parms = NULL, int num_parms = 0)
 	{
 		lightable = true;
 	}
+	
+
 	lp_canvas->lock();
 	lp_canvas->clear();
 	ry+=1;
@@ -240,10 +248,36 @@ int Game_Main(void *parms = NULL, int num_parms = 0)
 	//Draw_Gouraud_Triangle(100,100,100,300,200,300,test_color[0],test_color[1],test_color[2],lp_canvas->lp_backbuffer,lp_canvas->lpitch);
 	//Draw_Gouraud_Triangle(100,450,100,300,200,300,test_color[0],test_color[1],test_color[2],lp_canvas->lp_backbuffer,lp_canvas->lpitch);
 	////////////////////////////////
-	lp_canvas->render();
+
+	Vertex3d v1;
+	Vertex3d v2;
+	Vertex3d v3;
+	v1.x = 100;v1.y = 100;v2.x = 100;v2.y = 300;v3.x = 200;v3.y = 300;
+	v1.tx = 0;v1.ty = 0;v2.tx = 0;v2.ty = 1;v3.tx = 1;v3.ty = 1;
+	drawTextureTriangle(&v1,&v2,&v3,&image,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+	v1.x = 100;v1.y = 100;v2.x = 200;v2.y = 100;v3.x = 200;v3.y = 300;
+	v1.tx = 0;v1.ty = 0;v2.tx = 1;v2.ty = 0;v3.tx = 1;v3.ty = 1;
+	drawTextureTriangle(&v1,&v2,&v3,&image,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+	lp_canvas->showImage(&image,300,100);
+
+
+	//lp_canvas->render();
+
+
 	lp_canvas->unlock();
+
+	//¼ÆËãÖ¡Êý
+	if ((timeGetTime() - second)<1000)
+	{
+		fps++;
+	}else{		
+		fps_show = fps;
+		fps = 0;
+		second = timeGetTime();
+	}
+	sprintf(buffer,"fps = %d",fps_show);
+	Draw_Text_GDI(buffer,0,0,RGB(255,255,255));
 	lp_canvas->flip();
-	Sleep(30);
 	return(1);
 
 }
@@ -268,7 +302,6 @@ void createLight(){
 	light->init(Light::LIGHTV1_STATE_ON,Light::LIGHTV1_ATTR_POINT,0,0,(new Color())->init(_RGB32BIT(0xff,100,100,200)),0.001,0,0,p,NULL,0,0,0);
 	lp_canvas->addLight(light);
 }
-
 void createObject(){
 	Vertex3d *v = NULL;
 	Poly *p = NULL;
@@ -302,10 +335,20 @@ void createObject(){
 		//cube.addPoly(index[j*3],index[j*3+1],index[j*3+2]);
 	}
 }
-int WINAPI WinMain(	HINSTANCE hinstance,
-					HINSTANCE hprevinstance,
-					LPSTR lpcmdline,
-					int ncmdshow)
+void createImage(){
+	image.width = 128;
+	image.height = 128;
+	image.power_of_two = 7;
+	image.data = new Color[128*128];
+	for (int i = 0;i<128;i++)
+	{
+		for (int j = 0;j<128;j++)
+		{
+			image.data[(i<<7) + j].argb = _RGB32BIT(0xff,i*2,0,0); 
+		}
+	}
+}
+int WINAPI WinMain(	HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,int ncmdshow)
 {
 	lp_canvas = new Canvas();
 	lp_canvas->init(hinstance,WindowProc,SCREEN_WIDTH,SCREEN_HEIGHT,SCREEN_BPP,1);
@@ -319,7 +362,11 @@ int WINAPI WinMain(	HINSTANCE hinstance,
 	Matrix rotation(44);
 	float m[16] = {1,0,0,0,0,0,-1,0,0,1,0,0,0,0,0,1};
 	rotation.init(m);
-	loadObject_ASC("car01.asc",&cube,&position,&scale,&rotation);
+	loadObject_ASC("cube01.asc",&cube,&position,&scale,&rotation,POLY4D_ATTR_SHADE_MODE_GOURAUD);
+
+	loadBitmapImage(&image,"img/123.bmp");
+	//createImage();
+
 	Camera *camera = new Camera();
 	Vector3d dir;
 	dir.init(0,0,0,1);

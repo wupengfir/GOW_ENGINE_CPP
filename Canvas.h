@@ -3,6 +3,7 @@
 #include "Geometry.h"
 #include "GraphicFunctions.h"
 #include "Light.h"
+#include "Loader.h"
 inline void Mem_Set_QUAD(void *dest, UINT data, int count)
 {
 	_asm 
@@ -25,9 +26,10 @@ class Object3d;
 class RenderList;
 class Matrix;
 class Light;
+class BitmapData;
 class Canvas
 {
-private:
+public:
 	LPDIRECTDRAW7		 lp_directdraw;
 	LPDIRECTDRAWSURFACE7 lp_primary_surface;
 	LPDIRECTDRAWSURFACE7 lp_back_surface;
@@ -73,6 +75,8 @@ public:
 		//((UINT*)lp_backbuffer)[x+((y*lpitch)>>2)] = color; 
 		Mem_Set_QUAD((UINT*)lp_backbuffer + x+((y*lpitch)>>2),color,1);
 	}
+
+	void showImage(BitmapData* bitmapdata,int x,int y);
 
 };
 

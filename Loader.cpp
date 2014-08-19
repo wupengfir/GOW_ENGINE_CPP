@@ -1,6 +1,6 @@
 #include "Loader.h"
 
-void loadObject_ASC(char* path,Object3d* obj,Point3d* p_pos,Vector3d* p_scale,Matrix* p_matrix){
+void loadObject_ASC(char* path,Object3d* obj,Point3d* p_pos,Vector3d* p_scale,Matrix* p_matrix,int attr){
 	std::ifstream fin(path);
 	char buffer[1024];
 	char number[10];
@@ -79,7 +79,7 @@ void loadObject_ASC(char* path,Object3d* obj,Point3d* p_pos,Vector3d* p_scale,Ma
 			vertex_list[i]->pos.z *= p_scale->z;
 		}
 		obj->lp_vertex_local[i].normal.init(0,0,0,1);
-		obj->lp_vertex_trans[i].normal.init(0,0,0,1);
+		obj->lp_vertex_trans[i].normal.init(0,0,0,1);//这里要处理trans是因为下面算法线用的trans
 		obj->lp_vertex_local[i].pos = vertex_list[i]->pos;
 		obj->lp_vertex_trans[i].pos = vertex_list[i]->pos;
 	}
@@ -89,7 +89,7 @@ void loadObject_ASC(char* path,Object3d* obj,Point3d* p_pos,Vector3d* p_scale,Ma
 		obj->lp_polys[i].v_index_list[1] = (int)pos_List[i]->y;
 		obj->lp_polys[i].v_index_list[2] = (int)pos_List[i]->z;
 		obj->lp_polys[i].color.argb = 0xffffffff;
-		obj->lp_polys[i].attr = POLY4D_ATTR_SHADE_MODE_GOURAUD;
+		obj->lp_polys[i].attr = attr;
 	}
 	computeVertexNormalVector(obj);
 	delete temp_point;
@@ -121,4 +121,58 @@ void computeVertexNormalVector(Object3d* obj){
 		lp_vertex = obj->lp_vertex_local + index;
 		normalizeVector3d(&lp_vertex->normal);
 	}
+};
+
+
+void loadBitmapImage(BitmapData *bitmapdata,char* path){
+
+	char* temp_data;
+	bool flip = false;
+	std::ifstream fin(path,std::ios::binary);
+	fin.seekg(sizeof(BITMAPFILEHEADER),std::ios::beg);
+	BITMAPINFOHEADER header;
+	fin.read((char*)&header,sizeof(header));
+	bitmapdata->width = header.biWidth;
+	bitmapdata->height = header.biHeight;
+	flip = bitmapdata->height>0?true:false;
+	bitmapdata->height = abs(bitmapdata->height);
+	if ((bitmapdata->width&(bitmapdata->width -1)) == 0)
+	{
+		int power = 1;
+		while(bitmapdata->width>>power != 1){
+			power++;
+		}
+		bitmapdata->power_of_two = power;
+	}
+	bitmapdata->data = new Color[bitmapdata->width*bitmapdata->height];
+	if (header.biBitCount != 24)
+	{
+		return;
+		//fin.seekg(sizeof(RGBQUAD),std::ios::cur);
+	}
+	UINT tempdata = 0;
+	int lineLength = (bitmapdata->width*3 + 3)/4*4;
+	temp_data = new char[lineLength*bitmapdata->height];
+	fin.read(temp_data,lineLength*bitmapdata->height);
+	for (int i = 0;i<bitmapdata->height;i++)
+	{
+		for (int j = 0;j<bitmapdata->width;j++)
+		{
+			if (flip)
+			{
+				bitmapdata->data[(bitmapdata->height - i - 1)*bitmapdata->width+j].b = (UCHAR)temp_data[i*lineLength + j*3];
+				bitmapdata->data[(bitmapdata->height - i - 1)*bitmapdata->width+j].g = (UCHAR)temp_data[i*lineLength + j*3 + 1];
+				bitmapdata->data[(bitmapdata->height - i - 1)*bitmapdata->width+j].r = (UCHAR)temp_data[i*lineLength + j*3 + 2];
+			}else{
+				bitmapdata->data[i*bitmapdata->width+j].b = (UCHAR)temp_data[i*lineLength + j*3];
+				bitmapdata->data[i*bitmapdata->width+j].g = (UCHAR)temp_data[i*lineLength + j*3 + 1];
+				bitmapdata->data[i*bitmapdata->width+j].r = (UCHAR)temp_data[i*lineLength + j*3 + 2];
+			}			
+		}
+	}
+	delete[] temp_data;
+};
+
+BitmapData::~BitmapData(){
+	delete[] data;
 };
