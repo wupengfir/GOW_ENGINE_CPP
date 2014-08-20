@@ -127,7 +127,7 @@ int second = 0;
 int Game_Main(void *parms = NULL, int num_parms = 0)
 {
 	int current_clock = timeGetTime();
-	if ((current_clock - start_clock) < 30)
+	if ((current_clock - start_clock) < 33)
 	{
 		return 1;
 	}
@@ -240,6 +240,7 @@ int Game_Main(void *parms = NULL, int num_parms = 0)
 	lp_canvas->clear();
 	ry+=1;
 	cube.rotationY(ry);
+
 	////////////////////////////////
 	//Color *test_color = new Color[3];
 	//test_color[0].init(0xffff2233);
@@ -249,19 +250,19 @@ int Game_Main(void *parms = NULL, int num_parms = 0)
 	//Draw_Gouraud_Triangle(100,450,100,300,200,300,test_color[0],test_color[1],test_color[2],lp_canvas->lp_backbuffer,lp_canvas->lpitch);
 	////////////////////////////////
 
-	Vertex3d v1;
-	Vertex3d v2;
-	Vertex3d v3;
-	v1.x = 100;v1.y = 100;v2.x = 100;v2.y = 300;v3.x = 200;v3.y = 300;
-	v1.tx = 0;v1.ty = 0;v2.tx = 0;v2.ty = 1;v3.tx = 1;v3.ty = 1;
-	drawTextureTriangle(&v1,&v2,&v3,&image,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
-	v1.x = 100;v1.y = 100;v2.x = 200;v2.y = 100;v3.x = 200;v3.y = 300;
-	v1.tx = 0;v1.ty = 0;v2.tx = 1;v2.ty = 0;v3.tx = 1;v3.ty = 1;
-	drawTextureTriangle(&v1,&v2,&v3,&image,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
-	lp_canvas->showImage(&image,300,100);
+	//Vertex3d v1;
+	//Vertex3d v2;
+	//Vertex3d v3;
+	//v1.x = 100;v1.y = 100;v2.x = 100;v2.y = 300;v3.x = 200;v3.y = 450;
+	//v1.tx = 0;v1.ty = 0;v2.tx = 0;v2.ty = 1;v3.tx = 1;v3.ty = 1;
+	//drawTextureTriangle(&v1,&v2,&v3,&image,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+	//v1.x = 100;v1.y = 100;v2.x = 200;v2.y = 250;v3.x = 200;v3.y = 450;
+	//v1.tx = 0;v1.ty = 0;v2.tx = 1;v2.ty = 0;v3.tx = 1;v3.ty = 1;
+	//drawTextureTriangle(&v1,&v2,&v3,&image,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+	//lp_canvas->showImage(&image,300,100);
 
 
-	//lp_canvas->render();
+	lp_canvas->render();
 
 
 	lp_canvas->unlock();
@@ -362,9 +363,9 @@ int WINAPI WinMain(	HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,
 	Matrix rotation(44);
 	float m[16] = {1,0,0,0,0,0,-1,0,0,1,0,0,0,0,0,1};
 	rotation.init(m);
-	loadObject_ASC("cube01.asc",&cube,&position,&scale,&rotation,POLY4D_ATTR_SHADE_MODE_GOURAUD);
+	loadObject_ASC("cube01.asc",&cube,&position,&scale,0,POLY4D_ATTR_SHADE_MODE_GOURAUD);
 
-	loadBitmapImage(&image,"img/123.bmp");
+	loadBitmapImage(&image,"img/metal04.bmp");cube.texture = &image;
 	//createImage();
 
 	Camera *camera = new Camera();

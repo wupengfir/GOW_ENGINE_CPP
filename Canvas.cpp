@@ -266,6 +266,9 @@ void Canvas::render(bool backmove,bool cull){
 			else if (temp->attr&POLY4D_ATTR_SHADE_MODE_GOURAUD)
 			{
 				Draw_Gouraud_Triangle(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,temp->lit_color[0],temp->lit_color[1],temp->lit_color[2],lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+			}else if (temp->attr&POLY4D_ATTR_SHADE_MODE_TEXTURE)
+			{
+				drawTextureTriangle(temp,obj->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
 			}
 		}
 	}

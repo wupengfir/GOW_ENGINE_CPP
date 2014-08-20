@@ -83,6 +83,19 @@ void loadObject_ASC(char* path,Object3d* obj,Point3d* p_pos,Vector3d* p_scale,Ma
 		obj->lp_vertex_local[i].pos = vertex_list[i]->pos;
 		obj->lp_vertex_trans[i].pos = vertex_list[i]->pos;
 	}
+
+
+	//测试纹理，记者删
+	obj->lp_texture_position_list = new Point2d[6];
+	obj->lp_texture_position_list[0].x = 0;obj->lp_texture_position_list[0].y = 0;
+	obj->lp_texture_position_list[1].x = 0;obj->lp_texture_position_list[1].y = 1;
+	obj->lp_texture_position_list[2].x = 1;obj->lp_texture_position_list[2].y = 1;
+	obj->lp_texture_position_list[3].x = 0;obj->lp_texture_position_list[3].y = 0;
+	obj->lp_texture_position_list[4].x = 1;obj->lp_texture_position_list[4].y = 0;
+	obj->lp_texture_position_list[5].x = 1;obj->lp_texture_position_list[5].y = 1;
+	///////
+
+
 	for (i = 0;i<num_poly;i++)
 	{
 		obj->lp_polys[i].v_index_list[0] = (int)pos_List[i]->x;
@@ -90,6 +103,21 @@ void loadObject_ASC(char* path,Object3d* obj,Point3d* p_pos,Vector3d* p_scale,Ma
 		obj->lp_polys[i].v_index_list[2] = (int)pos_List[i]->z;
 		obj->lp_polys[i].color.argb = 0xffffffff;
 		obj->lp_polys[i].attr = attr;
+
+		////////////////测试纹理，记者删
+		obj->lp_polys[i].lp_texture_position_object = obj->lp_texture_position_list;
+		if (i%2 == 0)
+		{
+			obj->lp_polys[i].t_index_list[0] = 0;
+			obj->lp_polys[i].t_index_list[1] = 1;
+			obj->lp_polys[i].t_index_list[2] = 2;
+		}else{
+			obj->lp_polys[i].t_index_list[0] = 3;
+			obj->lp_polys[i].t_index_list[1] = 4;
+			obj->lp_polys[i].t_index_list[2] = 5;
+		}
+		//////////////////
+
 	}
 	computeVertexNormalVector(obj);
 	delete temp_point;

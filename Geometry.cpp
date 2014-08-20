@@ -195,8 +195,12 @@ void Object3d::init(int num_v,int num_p,int num_f){
 
 
 Object3d::~Object3d(){
-	delete lp_vertex_local;
-	delete lp_vertex_trans;
+	delete lp_head_vlist_local;
+	delete lp_head_vlist_trans;
+	delete lp_polys;
+	delete lp_texture_position_list;
+	lp_polys = NULL;
+	lp_texture_position_list = NULL;
 	lp_vertex_local = NULL;
 	lp_vertex_trans = NULL;
 	lp_head_vlist_local = NULL;

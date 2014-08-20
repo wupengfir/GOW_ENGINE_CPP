@@ -59,6 +59,7 @@ class Object3d;
 class Point3d;
 class Matrix;
 class Color;
+class BitmapData;
 inline void vector3dCopy(Vector3d* vdst, Vector3d* vsrc);
 inline void vector3dInit(Vector3d* vdst);
 inline float vector3dLengthFast(Vector3d* va);
@@ -230,8 +231,10 @@ public:
 	Vector3d normal_vector;
 
 	Vertex3d* lp_vertex_object;
-
+	Point2d* lp_texture_position_object;
+	BitmapData* texture;
 	int v_index_list[3];
+	int t_index_list[3];
 
 	Poly(){
 		state = POLY4D_STATE_ACTIVE;
@@ -301,9 +304,8 @@ public:
 	int curr_frame;
 	int num_polys;
 
-	Point2d* texture_position_list;
-	//int init_num_polys;
-	//int init_num_vertexs;
+	Point2d* lp_texture_position_list;
+	BitmapData *texture;
 
 	Vertex3d* lp_vertex_local;
 	Vertex3d* lp_vertex_trans;
