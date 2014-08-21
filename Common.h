@@ -125,13 +125,14 @@ inline int indexOf(std::string& str,const char* find,int start_index = 0){
 	return temp;
 };
 
-inline std::string& subStringByBlank(std::string& str,int start_index,std::string& storage){
+inline std::string& subStringByMark(std::string& str,int start_index,std::string& storage,char mark = ' '){
 	int index = start_index;
 	int num = 0;
-	int length = 3;
+	int length = 10;
 	char* buffer = new char[length];
 	char* temp = NULL;
-	while(index<str.size()&&str[index] != ' '){
+	while(index<str.size()&&str[index] != mark){
+		//如果长度不够，再分配;
 		if (num == length)
 		{
 			length *= 2;
@@ -162,6 +163,13 @@ inline std::string& subStringByBlank(std::string& str,int start_index,std::strin
 
 inline float stringToNumber(std::string& str){
 	float num = 0;
+	std::stringstream stream(str);
+	stream>>num;
+	return num;
+}
+
+inline int stringToInt(std::string& str){
+	int num = 0;
 	std::stringstream stream(str);
 	stream>>num;
 	return num;

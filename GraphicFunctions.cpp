@@ -903,12 +903,12 @@ void drawTextureTriangle(Poly *poly,BitmapData *texture,UCHAR *dest_buffer,int m
 
 	if (FCMP(v2->y,v3->y))
 	{
-		drawBottomTextureTriangle(v1,v2,v3,texture,dest_buffer,mempitch);
+		drawBottomTextureTriangle(v1,v2,v3,texture,dest_buffer,mempitch,poly->lit_color[0]);
 		return;
 	}
 	if (FCMP(v1->y,v2->y))
 	{
-		drawTopTextureTriangle(v3,v1,v2,texture,dest_buffer,mempitch);
+		drawTopTextureTriangle(v3,v1,v2,texture,dest_buffer,mempitch,poly->lit_color[0]);
 		return;
 	}
 	Vertex3d temp1;
@@ -918,11 +918,11 @@ void drawTextureTriangle(Poly *poly,BitmapData *texture,UCHAR *dest_buffer,int m
 	temp1.ty = (v2->y-v1->y)*(v3->ty-v1->ty)/(v3->y-v1->y)+v1->ty;
 	temp1.tx = (v2->y-v1->y)*(v3->tx-v1->tx)/(v3->y-v1->y)+v1->tx;
 	temp2 = temp1;
-	drawBottomTextureTriangle(v1,v2,&temp1,texture,dest_buffer,mempitch);
-	drawTopTextureTriangle(v3,&temp2,v2,texture,dest_buffer,mempitch);
+	drawBottomTextureTriangle(v1,v2,&temp1,texture,dest_buffer,mempitch,poly->lit_color[0]);
+	drawTopTextureTriangle(v3,&temp2,v2,texture,dest_buffer,mempitch,poly->lit_color[0]);
 };
 
-void drawBottomTextureTriangle(Vertex3d *v1,Vertex3d *v2,Vertex3d *v3,BitmapData *texture,UCHAR *dest_buffer, int mempitch){
+void drawBottomTextureTriangle(Vertex3d *v1,Vertex3d *v2,Vertex3d *v3,BitmapData *texture,UCHAR *dest_buffer, int mempitch,Color color){
 	Vertex3d *tv;
 	if (v3->x<v2->x)
 	{
@@ -992,6 +992,11 @@ void drawBottomTextureTriangle(Vertex3d *v1,Vertex3d *v2,Vertex3d *v3,BitmapData
 	float tx_step;
 	float ty_step;
 	UINT final_color;
+
+	float light_r = (float)color.r/256;
+	float light_g = (float)color.g/256;
+	float light_b = (float)color.b/256;
+	Color temp_color;
 	if(x1>=min_clip_x&&x1<=max_clip_x&&x2>=min_clip_x&&x2<=max_clip_x&&x3>=min_clip_x&&x3<=max_clip_x){
 		for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch)
 		{
@@ -1003,7 +1008,11 @@ void drawBottomTextureTriangle(Vertex3d *v1,Vertex3d *v2,Vertex3d *v3,BitmapData
 			{
 				texture_x = (txs + loopx*tx_step)*(texture->width - 1);
 				texture_y = (tys + loopx*ty_step)*(texture->height - 1);
-				final_color = texture->data[(texture_y<<texture->power_of_two)+texture_x].argb;
+				temp_color = texture->data[(texture_y<<texture->power_of_two)+texture_x];
+				temp_color.r *= light_r;
+				temp_color.g *= light_g;
+				temp_color.b *= light_b;
+				final_color = temp_color.argb;
 				Mem_Set_QUAD(lp_addr+ixs+loopx,final_color,1);
 			}
 			xs += left;
@@ -1058,7 +1067,11 @@ void drawBottomTextureTriangle(Vertex3d *v1,Vertex3d *v2,Vertex3d *v3,BitmapData
 			{
 				texture_x = (clip_txs + loopx*tx_step)*(texture->width - 1);
 				texture_y = (clip_tys + loopx*ty_step)*(texture->height - 1);
-				final_color = texture->data[(texture_y<<texture->power_of_two)+texture_x].argb;
+				temp_color = texture->data[(texture_y<<texture->power_of_two)+texture_x];
+				temp_color.r *= light_r;
+				temp_color.g *= light_g;
+				temp_color.b *= light_b;
+				final_color = temp_color.argb;
 				Mem_Set_QUAD(lp_addr+ixs+loopx,final_color,1);
 			}
 			
@@ -1067,7 +1080,7 @@ void drawBottomTextureTriangle(Vertex3d *v1,Vertex3d *v2,Vertex3d *v3,BitmapData
 	}
 };
 
-void drawTopTextureTriangle(Vertex3d *v1,Vertex3d *v2,Vertex3d *v3,BitmapData *texture,UCHAR *dest_buffer, int mempitch){
+void drawTopTextureTriangle(Vertex3d *v1,Vertex3d *v2,Vertex3d *v3,BitmapData *texture,UCHAR *dest_buffer, int mempitch,Color color){
 	Vertex3d *tv;
 	if (v3->x<v2->x)
 	{
@@ -1139,6 +1152,11 @@ void drawTopTextureTriangle(Vertex3d *v1,Vertex3d *v2,Vertex3d *v3,BitmapData *t
 	float tx_step;
 	float ty_step;
 	UINT final_color;
+
+	float light_r = (float)color.r/256;
+	float light_g = (float)color.g/256;
+	float light_b = (float)color.b/256;
+	Color temp_color;
 	if(x1>=min_clip_x&&x1<=max_clip_x&&x2>=min_clip_x&&x2<=max_clip_x&&x3>=min_clip_x&&x3<=max_clip_x){
 		for (loopy = iy1;loopy>=iy3;loopy--,lp_addr-=mempitch)
 		{
@@ -1150,7 +1168,11 @@ void drawTopTextureTriangle(Vertex3d *v1,Vertex3d *v2,Vertex3d *v3,BitmapData *t
 			{
 				texture_x = (txs + loopx*tx_step)*(texture->width - 1);
 				texture_y = (tys + loopx*ty_step)*(texture->height - 1);
-				final_color = texture->data[(texture_y<<texture->power_of_two)+texture_x].argb;
+				temp_color = texture->data[(texture_y<<texture->power_of_two)+texture_x];
+				temp_color.r *= light_r;
+				temp_color.g *= light_g;
+				temp_color.b *= light_b;
+				final_color = temp_color.argb;
 				Mem_Set_QUAD(lp_addr+ixs+loopx,final_color,1);
 			}
 			xs -= left;
@@ -1205,7 +1227,11 @@ void drawTopTextureTriangle(Vertex3d *v1,Vertex3d *v2,Vertex3d *v3,BitmapData *t
 			{
 				texture_x = (clip_txs + loopx*tx_step)*(texture->width - 1);
 				texture_y = (clip_tys + loopx*ty_step)*(texture->height - 1);
-				final_color = texture->data[(texture_y<<texture->power_of_two)+texture_x].argb;
+				temp_color = texture->data[(texture_y<<texture->power_of_two)+texture_x];
+				temp_color.r *= light_r;
+				temp_color.g *= light_g;
+				temp_color.b *= light_b;
+				final_color = temp_color.argb;
 				Mem_Set_QUAD(lp_addr+ixs+loopx,final_color,1);
 			}
 			

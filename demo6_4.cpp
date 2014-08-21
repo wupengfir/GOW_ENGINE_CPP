@@ -276,7 +276,7 @@ int Game_Main(void *parms = NULL, int num_parms = 0)
 		fps = 0;
 		second = timeGetTime();
 	}
-	sprintf(buffer,"fps = %d",fps_show);
+	sprintf_s(buffer,"fps = %d",fps_show);
 	Draw_Text_GDI(buffer,0,0,RGB(255,255,255));
 	lp_canvas->flip();
 	return(1);
@@ -363,10 +363,9 @@ int WINAPI WinMain(	HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,
 	Matrix rotation(44);
 	float m[16] = {1,0,0,0,0,0,-1,0,0,1,0,0,0,0,0,1};
 	rotation.init(m);
-	loadObject_ASC("cube01.asc",&cube,&position,&scale,0,POLY4D_ATTR_SHADE_MODE_GOURAUD);
-
-	loadBitmapImage(&image,"img/metal04.bmp");cube.texture = &image;
-	//createImage();
+	//loadObject_ASC("cube01.asc",&cube,&position,&scale,0,POLY4D_ATTR_SHADE_MODE_TEXTURE);
+	loadObject_COB("cube_flat_textured_01.cob",&cube,&position,&scale,0,POLY4D_ATTR_SHADE_MODE_TEXTURE,true);
+	loadBitmapImage(&image,"img/123.bmp");cube.texture = &image;
 
 	Camera *camera = new Camera();
 	Vector3d dir;

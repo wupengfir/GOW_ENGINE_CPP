@@ -43,5 +43,5 @@ void Draw_top_Gouraud_Triangle(float x1,float y1,
 	UCHAR *dest_buffer, int mempitch);
 
 void drawTextureTriangle(Poly *poly,BitmapData *texture,UCHAR *dest_buffer, int mempitch);
-void drawTopTextureTriangle(Vertex3d *v1,Vertex3d *v2,Vertex3d *v3,BitmapData *texture,UCHAR *dest_buffer, int mempitch);
-void drawBottomTextureTriangle(Vertex3d *v1,Vertex3d *v2,Vertex3d *v3,BitmapData *texture,UCHAR *dest_buffer, int mempitch);
+void drawTopTextureTriangle(Vertex3d *v1,Vertex3d *v2,Vertex3d *v3,BitmapData *texture,UCHAR *dest_buffer, int mempitch,Color color);
+void drawBottomTextureTriangle(Vertex3d *v1,Vertex3d *v2,Vertex3d *v3,BitmapData *texture,UCHAR *dest_buffer, int mempitch,Color color);

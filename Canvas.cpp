@@ -293,7 +293,7 @@ void Canvas::lightObject(Object3d* obj){
 			{
 				continue;
 			}
-			else if (lp_poly->attr&POLY4D_ATTR_SHADE_MODE_FLAT)
+			else if (lp_poly->attr&POLY4D_ATTR_SHADE_MODE_FLAT||lp_poly->attr&POLY4D_ATTR_SHADE_MODE_TEXTURE)
 			{
 				for (std::vector<Light*>::size_type i = 0;i!=LightList.size();i++)
 				{
