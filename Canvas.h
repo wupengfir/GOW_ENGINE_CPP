@@ -9,9 +9,9 @@ inline void Mem_Set_QUAD(void *dest, UINT data, int count)
 	_asm 
 	{ 
 		mov edi, dest   ; edi points to destination memory
-			mov ecx, count  ; number of 32-bit words to move
-			mov eax, data   ; 32-bit data
-			rep stosd       ; move data
+		mov ecx, count  ; number of 32-bit words to move
+		mov eax, data   ; 32-bit data
+		rep stosd       ; move data
 	} 
 };
 

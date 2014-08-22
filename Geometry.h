@@ -92,9 +92,6 @@ public:
 		return this;
 	}; 
 
-	Color(){
-		argb = 0;
-	};
 };
 
 class Point2d 
