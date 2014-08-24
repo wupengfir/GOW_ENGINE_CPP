@@ -363,8 +363,8 @@ int WINAPI WinMain(	HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,
 	Matrix rotation(44);
 	float m[16] = {1,0,0,0,0,0,-1,0,0,1,0,0,0,0,0,1};
 	rotation.init(m);
-	//loadObject_ASC("cube01.asc",&cube,&position,&scale,0,POLY4D_ATTR_SHADE_MODE_TEXTURE);
-	loadObject_COB("cube_flat_textured_01.cob",&cube,&position,&scale,0,POLY4D_ATTR_SHADE_MODE_TEXTURE,true);
+	loadObject_ASC("car01.asc",&cube,&position,&scale,&rotation,POLY4D_ATTR_SHADE_MODE_TEXTURE);
+	//loadObject_COB("cube_flat_textured_01.cob",&cube,&position,&scale,0,POLY4D_ATTR_SHADE_MODE_TEXTURE,true);
 	loadBitmapImage(&image,"img/123.bmp");cube.texture = &image;
 
 	Camera *camera = new Camera();

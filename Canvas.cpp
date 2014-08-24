@@ -250,6 +250,7 @@ void Canvas::render(bool backmove,bool cull){
 				renderlist_all->addPoly(temp);
 			}
 		}
+		quickSort(renderlist_all->polys,0,renderlist_all->num_polys - 1);
 		for (i = 0;i<renderlist_all->num_polys;i++)
 		{
 			temp = renderlist_all->polys[i];
