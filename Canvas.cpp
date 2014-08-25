@@ -241,6 +241,7 @@ void Canvas::render(bool backmove,bool cull){
 		lp_camera->cameraToPerspective_object(obj);
 		lp_camera->perspectiveToScreen_object(obj);
 		Poly* temp;
+		RenderPoly* renderpoly_temp;
 		Point3d* p1;Point3d* p2;Point3d* p3;
 		for (i = 0;i<obj->num_polys;i++)
 		{
@@ -253,19 +254,22 @@ void Canvas::render(bool backmove,bool cull){
 		quickSort(renderlist_all->polys,0,renderlist_all->num_polys - 1);
 		for (i = 0;i<renderlist_all->num_polys;i++)
 		{
-			temp = renderlist_all->polys[i];
-			p1 = &((temp->lp_vertex_object[temp->v_index_list[0]]).pos);
-			p2 = &((temp->lp_vertex_object[temp->v_index_list[1]]).pos);
-			p3 = &((temp->lp_vertex_object[temp->v_index_list[2]]).pos);
+			temp = renderlist_all->polys[i];			
 			/*drawLine(p1->x,p1->y,p2->x,p2->y,0xff00ffff);
 			drawLine(p2->x,p2->y,p3->x,p3->y,0xff00ffff);
 			drawLine(p3->x,p3->y,p1->x,p1->y,0xff00ffff);*/
 			if (temp->attr&POLY4D_ATTR_SHADE_MODE_FLAT)
 			{
+				p1 = &((temp->lp_vertex_object[temp->v_index_list[0]]).pos);
+				p2 = &((temp->lp_vertex_object[temp->v_index_list[1]]).pos);
+				p3 = &((temp->lp_vertex_object[temp->v_index_list[2]]).pos);
 				Draw_Triangle_2D(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,temp->lit_color[0].argb,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
 			}
 			else if (temp->attr&POLY4D_ATTR_SHADE_MODE_GOURAUD)
 			{
+				p1 = &((temp->lp_vertex_object[temp->v_index_list[0]]).pos);
+				p2 = &((temp->lp_vertex_object[temp->v_index_list[1]]).pos);
+				p3 = &((temp->lp_vertex_object[temp->v_index_list[2]]).pos);
 				Draw_Gouraud_Triangle(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,temp->lit_color[0],temp->lit_color[1],temp->lit_color[2],lp_canvas->lp_backbuffer,lp_canvas->lpitch);
 			}else if (temp->attr&POLY4D_ATTR_SHADE_MODE_TEXTURE)
 			{
@@ -499,4 +503,5 @@ Canvas::~Canvas(void)
 	}	
 	releaseT(lp_directdraw);
 	delete lp_camera;
+	delete renderlist_all;
 };

@@ -212,6 +212,12 @@ public:
 		};
 	};
 
+	inline void copy(Vertex3d* v){
+		pos = v->pos;
+		normal = v->normal;
+		texture_pos = v->texture_pos;
+	};
+
 };
 
 class Poly{
@@ -230,7 +236,9 @@ public:
 	Vertex3d* lp_vertex_object;
 	Point2d* lp_texture_position_object;
 	BitmapData* texture;
+	//顶点坐标下标
 	int v_index_list[3];
+	//纹理坐标下标
 	int t_index_list[3];
 
 	Poly(){
@@ -265,6 +273,66 @@ public:
 		float x2 = lp_vertex_object[v_index_list[2]].x-lp_vertex_object[v_index_list[0]].x;
 		float y2 = lp_vertex_object[v_index_list[2]].y-lp_vertex_object[v_index_list[0]].y;
 		float z2 = lp_vertex_object[v_index_list[2]].z-lp_vertex_object[v_index_list[0]].z;
+		Vector3d v;
+		v.x = x2;v.y = y2;v.z = z2;
+
+		normal_vector.x = u.y*v.z-v.y*u.z;
+		normal_vector.y = u.z*v.x-u.x*v.z;
+		normal_vector.z = u.x*v.y-v.x*u.y;
+		normal_vector.w = 1;
+	}
+
+};
+
+class RenderPoly{
+public:
+	int state;
+	int attr;
+	Color color;
+	Color lit_color[3];
+
+	int matrial_index;
+	float normal_length;
+	float avg_z;
+
+	Vector3d normal_vector;
+	BitmapData* texture;
+
+	Vertex3d vlist[3];
+	Vertex3d tvlist[3];
+
+	RenderPoly(){
+		state = POLY4D_STATE_ACTIVE;
+		attr = 0;
+	}
+
+	inline bool avaliable(){
+		if(!(state&POLY4D_STATE_ACTIVE)|| state&POLY4D_STATE_CLIPPED || state&POLY4D_STATE_BACKFACE)
+			return false;
+		return true;
+	};
+
+	inline void calculateAvgZ(){
+		avg_z = (tvlist[0].z+tvlist[1].z+tvlist[2].z)/3;
+	}
+
+	inline void calculateNormalVector(){
+
+		calculateNormalVectorWithoutNormallize();
+		normalizeVector3d(&normal_vector);
+	}
+
+	inline  void calculateNormalVectorWithoutNormallize(){
+
+		float x1 = tvlist[1].x-tvlist[0].x;
+		float y1 = tvlist[1].y-tvlist[0].y;
+		float z1 = tvlist[1].z-tvlist[0].z;
+		Vector3d u;
+		u.x = x1;u.y = y1;u.z = z1;
+
+		float x2 = tvlist[2].x-tvlist[0].x;
+		float y2 = tvlist[2].y-tvlist[0].y;
+		float z2 = tvlist[2].z-tvlist[0].z;
 		Vector3d v;
 		v.x = x2;v.y = y2;v.z = z2;
 
@@ -402,11 +470,22 @@ public:
 	int state;
 	int attr;
 	int num_polys;
-	std::vector<Poly*> polys;
+	std::vector<RenderPoly> polys;
 	inline void reset(){
 		num_polys = 0;
 	};
 
+	//inline void addPoly(Poly* poly){
+	//	if(polys.capacity() == 0){
+	//		polys.resize(1024);
+	//	}
+	//	else if (polys.capacity() == num_polys)
+	//	{
+	//		polys.resize(polys.capacity()*2);
+	//	}
+	//	polys[num_polys] = poly;
+	//	num_polys++;
+	//}
 	inline void addPoly(Poly* poly){
 		if(polys.capacity() == 0){
 			polys.resize(1024);
@@ -415,7 +494,21 @@ public:
 		{
 			polys.resize(polys.capacity()*2);
 		}
-		polys[num_polys] = poly;
+		polys[num_polys].attr = poly->attr;
+		polys[num_polys].state = poly->state;
+		polys[num_polys].color = poly->color;
+		polys[num_polys].normal_length = poly->normal_length;
+		polys[num_polys].normal_vector = poly->normal_vector;
+		polys[num_polys].avg_z = poly->avg_z;
+		polys[num_polys].lit_color[0] = poly->lit_color[0];
+		polys[num_polys].lit_color[1] = poly->lit_color[1];
+		polys[num_polys].lit_color[2] = poly->lit_color[2];
+		polys[num_polys].tvlist[0].copy(poly->lp_vertex_object + poly->v_index_list[0]);
+		polys[num_polys].tvlist[1].copy(poly->lp_vertex_object + poly->v_index_list[1]);
+		polys[num_polys].tvlist[2].copy(poly->lp_vertex_object + poly->v_index_list[2]);
+		polys[num_polys].tvlist[0].texture_pos = poly->lp_texture_position_object[poly->t_index_list[0]];
+		polys[num_polys].tvlist[1].texture_pos = poly->lp_texture_position_object[poly->t_index_list[1]];
+		polys[num_polys].tvlist[2].texture_pos = poly->lp_texture_position_object[poly->t_index_list[2]];
 		num_polys++;
 	}
 };

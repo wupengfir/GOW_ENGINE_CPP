@@ -1238,3 +1238,4 @@ void drawTopTextureTriangle(Vertex3d *v1,Vertex3d *v2,Vertex3d *v3,BitmapData *t
 		}		
 	}
 };
+
