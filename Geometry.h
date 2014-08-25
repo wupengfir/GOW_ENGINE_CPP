@@ -471,6 +471,7 @@ public:
 	int attr;
 	int num_polys;
 	std::vector<RenderPoly> polys;
+	std::vector<RenderPoly*> lp_polys;
 	inline void reset(){
 		num_polys = 0;
 	};
@@ -489,10 +490,12 @@ public:
 	inline void addPoly(Poly* poly){
 		if(polys.capacity() == 0){
 			polys.resize(1024);
+			lp_polys.resize(1024);
 		}
 		else if (polys.capacity() == num_polys)
 		{
 			polys.resize(polys.capacity()*2);
+			lp_polys.resize(polys.capacity()*2);
 		}
 		polys[num_polys].attr = poly->attr;
 		polys[num_polys].state = poly->state;
@@ -509,6 +512,7 @@ public:
 		polys[num_polys].tvlist[0].texture_pos = poly->lp_texture_position_object[poly->t_index_list[0]];
 		polys[num_polys].tvlist[1].texture_pos = poly->lp_texture_position_object[poly->t_index_list[1]];
 		polys[num_polys].tvlist[2].texture_pos = poly->lp_texture_position_object[poly->t_index_list[2]];
+		lp_polys[num_polys] = &polys[num_polys];
 		num_polys++;
 	}
 };

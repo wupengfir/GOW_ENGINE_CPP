@@ -95,12 +95,12 @@ std::string& subStringByMark(std::string& str,int start_index,std::string& stora
 	return storage;
 };
 
-void quickSort(std::vector<Poly*>& data,int begin,int end){
+void quickSort(std::vector<RenderPoly*>& data,int begin,int end){
 	if (begin >= end)
 	{
 		return;
 	}
-	Poly* k = data[begin];
+	RenderPoly* k = data[begin];
 	int i = begin;
 	int j = end;
 	while(i<j){

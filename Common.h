@@ -68,6 +68,7 @@ extern int min_clip_x,                             // clipping rectangle
 
 class Canvas;
 class Poly;
+class RenderPoly;
 extern Canvas* lp_canvas;
 
 
@@ -90,7 +91,7 @@ inline int stringToInt(std::string& str){
 	return num;
 }
 
-void quickSort(std::vector<Poly*>& data,int begin,int end);
+void quickSort(std::vector<RenderPoly*>& data,int begin,int end);
 
 template<typename T> 
 void releaseT(T a) 

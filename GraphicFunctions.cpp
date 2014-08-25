@@ -873,19 +873,19 @@ void Draw_top_Gouraud_Triangle(float x1,float y1, float x2,float y2, float x3,fl
 	}
 };
 
-void drawTextureTriangle(Poly *poly,BitmapData *texture,UCHAR *dest_buffer,int mempitch){
+void drawTextureTriangle(RenderPoly *poly,BitmapData *texture,UCHAR *dest_buffer,int mempitch){
 	Vertex3d data1;
 	Vertex3d data2;
 	Vertex3d data3;
 	Vertex3d *v1;
 	Vertex3d *v2;
 	Vertex3d *v3;
-	data1.pos = (poly->lp_vertex_object[poly->v_index_list[0]]).pos;
-	data2.pos = (poly->lp_vertex_object[poly->v_index_list[1]]).pos;
-	data3.pos = (poly->lp_vertex_object[poly->v_index_list[2]]).pos;
-	data1.texture_pos =  poly->lp_texture_position_object[poly->t_index_list[0]];
-	data2.texture_pos =  poly->lp_texture_position_object[poly->t_index_list[1]];
-	data3.texture_pos =  poly->lp_texture_position_object[poly->t_index_list[2]];
+	data1.pos = poly->tvlist[0].pos;
+	data2.pos = poly->tvlist[1].pos;
+	data3.pos = poly->tvlist[2].pos;
+	data1.texture_pos =  poly->tvlist[0].texture_pos;
+	data2.texture_pos =  poly->tvlist[1].texture_pos;
+	data3.texture_pos =  poly->tvlist[2].texture_pos;
 	v1 = &data1;
 	v2 = &data2;
 	v3 = &data3;
