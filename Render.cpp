@@ -155,23 +155,22 @@ void Camera::removeBackFaceOfObj(Object3d *obj){
 	}
 };
 
-//void Camera::cameraToPerspective_renderlist(RenderList *list){
-//	Poly* lp_p = 0;
-//	std::vector<Poly*>::iterator iter = list->polys.begin();
-//	for (;iter!=list->polys.end();iter++)
-//	{
-//		lp_p = *iter;
-//		if (lp_p != NULL&&lp_p->avaliable())
-//		{
-//			for (int i = 0;i<3;i++)
-//			{
-//				float tz = lp_p->lp_vertex_object[lp_p->v_index_list[i]].z;
-//				lp_p->lp_vertex_object[lp_p->v_index_list[i]].x *= view_dist/tz;
-//				lp_p->lp_vertex_object[lp_p->v_index_list[i]].y *= view_dist*aspect_radio/tz;
-//			}
-//		}
-//	}
-//};
+void Camera::cameraToPerspective_renderlist(RenderList *list){
+	RenderPoly* lp_p = 0;
+	for (int i = 0;i<list->num_polys;i++)
+	{
+		lp_p = list->lp_polys[i];
+		if (lp_p != NULL&&lp_p->avaliable())
+		{
+			for (int i = 0;i<3;i++)
+			{
+				float tz = lp_p->tvlist[i].z;
+				lp_p->tvlist[i].x *= view_dist/tz;
+				lp_p->tvlist[i].y *= view_dist*aspect_radio/tz;
+			}
+		}
+	}
+};
 
 void Camera::cameraToPerspective_object(Object3d *obj){
 	Vertex3d* lp_p;
@@ -209,24 +208,23 @@ void Camera::cullObject(Object3d* obj,int type){
 	}
 };
 
-//void Camera::perspectiveToScreen_renderlist(RenderList* list){
-//	Poly* lp_p = 0;
-//	std::vector<Poly*>::iterator iter = list->polys.begin();
-//	float a = 0.5*viewport_width-0.5;
-//	float b = 0.5*viewport_height-0.5;
-//	for (;iter!=list->polys.end();iter++)
-//	{
-//		lp_p = *iter;
-//		if (lp_p != NULL&&lp_p->avaliable())
-//		{			
-//			for (int i = 0;i<3;i++)
-//			{
-//				lp_p->lp_vertex_object[lp_p->v_index_list[i]].x = a+a*lp_p->lp_vertex_object[lp_p->v_index_list[i]].x;
-//				lp_p->lp_vertex_object[lp_p->v_index_list[i]].y = b-b*lp_p->lp_vertex_object[lp_p->v_index_list[i]].y;
-//			}
-//		}
-//	}
-//};
+void Camera::perspectiveToScreen_renderlist(RenderList* list){
+	RenderPoly* lp_p = 0;
+	float a = 0.5*viewport_width-0.5;
+	float b = 0.5*viewport_height-0.5;
+	for (int i = 0;i<list->num_polys;i++)
+	{
+		lp_p = list->lp_polys[i];
+		if (lp_p != NULL&&lp_p->avaliable())
+		{			
+			for (int i = 0;i<3;i++)
+			{
+				lp_p->tvlist[i].x = a+a*lp_p->tvlist[i].x;
+				lp_p->tvlist[i].y = b-b*lp_p->tvlist[i].y;
+			}
+		}
+	}
+};
 
 void Camera::perspectiveToScreen_object(Object3d *obj){
 	Vertex3d* lp_p;

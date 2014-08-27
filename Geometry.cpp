@@ -206,3 +206,10 @@ Object3d::~Object3d(){
 	lp_head_vlist_local = NULL;
 	lp_head_vlist_trans =NULL;
 };
+
+
+void Point3d::build(Point3d* target,Vector3d* storage){
+	storage->x = target->x - x;
+	storage->y = target->y - y;
+	storage->z = target->z - z;
+};

@@ -1239,3 +1239,444 @@ void drawTopTextureTriangle(Vertex3d *v1,Vertex3d *v2,Vertex3d *v3,BitmapData *t
 	}
 };
 
+void clipPolyFromRenderlist(RenderList* rend_list,Camera* cam,int clip_flags){
+	int vertex_ccodes[3]; // used to store clipping flags
+	int num_verts_in;     // number of vertices inside
+	int v0, v1, v2;       // vertex indices
+
+	float z_factor,       // used in clipping computations
+		z_test;         // used in clipping computations
+
+	float xi, yi, x01i, y01i, x02i, y02i, // vertex intersection points
+		t1, t2,                         // parametric t values
+		ui, vi, u01i, v01i, u02i, v02i; // texture intersection points
+
+	int last_poly_index,            // last valid polygon in polylist
+		insert_poly_index;          // the current position new polygons are inserted at
+
+	Vector3d u,v,n;                 // used in vector calculations
+
+	RenderPoly temp_poly;            // used when we need to split a poly into 2 polys
+
+	insert_poly_index = last_poly_index = rend_list->num_polys;
+
+	// traverse polygon list and clip/cull polygons
+	for (int poly = 0; poly < last_poly_index; poly++)
+	{
+		// acquire current polygon
+		RenderPoly* curr_poly = rend_list->lp_polys[poly];
+		if ((curr_poly==NULL) || !(curr_poly->state & POLY4D_STATE_ACTIVE) ||
+			(curr_poly->state & POLY4D_STATE_CLIPPED ) || 
+			(curr_poly->state & POLY4D_STATE_BACKFACE) )
+			continue; // move onto next poly   
+		if (clip_flags & CLIP_POLY_X_PLANE)
+		{
+			z_factor = (0.5)*cam->viewplane_width/cam->view_dist;  
+
+			// vertex 0
+
+			z_test = z_factor*curr_poly->tvlist[0].z;
+
+			if (curr_poly->tvlist[0].x > z_test)
+				vertex_ccodes[0] = CLIP_CODE_GX;
+			else
+				if (curr_poly->tvlist[0].x < -z_test)
+					vertex_ccodes[0] = CLIP_CODE_LX;
+				else
+					vertex_ccodes[0] = CLIP_CODE_IX;
+
+			// vertex 1
+
+			z_test = z_factor*curr_poly->tvlist[1].z;         
+
+			if (curr_poly->tvlist[1].x > z_test)
+				vertex_ccodes[1] = CLIP_CODE_GX;
+			else
+				if (curr_poly->tvlist[1].x < -z_test)
+					vertex_ccodes[1] = CLIP_CODE_LX;
+				else
+					vertex_ccodes[1] = CLIP_CODE_IX;
+
+			// vertex 2
+
+			z_test = z_factor*curr_poly->tvlist[2].z;              
+
+			if (curr_poly->tvlist[2].x > z_test)
+				vertex_ccodes[2] = CLIP_CODE_GX;
+			else
+				if (curr_poly->tvlist[2].x < -z_test)
+					vertex_ccodes[2] = CLIP_CODE_LX;
+				else
+					vertex_ccodes[2] = CLIP_CODE_IX;
+
+			// test for trivial rejections, polygon completely beyond right or left
+			// clipping planes
+			if ( ((vertex_ccodes[0] == CLIP_CODE_GX) && 
+				(vertex_ccodes[1] == CLIP_CODE_GX) && 
+				(vertex_ccodes[2] == CLIP_CODE_GX) ) ||
+
+				((vertex_ccodes[0] == CLIP_CODE_LX) && 
+				(vertex_ccodes[1] == CLIP_CODE_LX) && 
+				(vertex_ccodes[2] == CLIP_CODE_LX) ) )
+
+			{
+				curr_poly->state |= POLY4D_STATE_CLIPPED;
+
+				// move on to next polygon
+				continue;
+			} // end if
+
+		} // end if x planes
+
+		// clip/cull to y-planes       
+		if (clip_flags & CLIP_POLY_Y_PLANE)
+		{
+			// clip/cull only based on y clipping planes
+			// for each vertice determine if it's in the clipping region or beyond it and
+			// set the appropriate clipping code
+			// we do NOT clip the final triangles, we are only trying to trivally reject them 
+			// we are going to clip polygons in the rasterizer to the screen rectangle
+			// but we do want to clip/cull polys that are totally outside the viewfrustrum
+
+			// since we are clipping to the top/bottom y-planes we need to use the FOV or
+			// the plane equations to find the z value that at the current y position would
+			// be outside the plane
+			z_factor = (0.5)*cam->viewplane_width/cam->view_dist;  
+
+			// vertex 0
+			z_test = z_factor*curr_poly->tvlist[0].z;
+
+			if (curr_poly->tvlist[0].y > z_test)
+				vertex_ccodes[0] = CLIP_CODE_GY;
+			else
+				if (curr_poly->tvlist[0].y < -z_test)
+					vertex_ccodes[0] = CLIP_CODE_LY;
+				else
+					vertex_ccodes[0] = CLIP_CODE_IY;
+
+			// vertex 1
+			z_test = z_factor*curr_poly->tvlist[1].z;         
+
+			if (curr_poly->tvlist[1].y > z_test)
+				vertex_ccodes[1] = CLIP_CODE_GY;
+			else
+				if (curr_poly->tvlist[1].y < -z_test)
+					vertex_ccodes[1] = CLIP_CODE_LY;
+				else
+					vertex_ccodes[1] = CLIP_CODE_IY;
+
+			// vertex 2
+			z_test = z_factor*curr_poly->tvlist[2].z;              
+
+			if (curr_poly->tvlist[2].y > z_test)
+				vertex_ccodes[2] = CLIP_CODE_GY;
+			else
+				if (curr_poly->tvlist[2].x < -z_test)
+					vertex_ccodes[2] = CLIP_CODE_LY;
+				else
+					vertex_ccodes[2] = CLIP_CODE_IY;
+
+			// test for trivial rejections, polygon completely beyond top or bottom
+			// clipping planes
+			if ( ((vertex_ccodes[0] == CLIP_CODE_GY) && 
+				(vertex_ccodes[1] == CLIP_CODE_GY) && 
+				(vertex_ccodes[2] == CLIP_CODE_GY) ) ||
+
+				((vertex_ccodes[0] == CLIP_CODE_LY) && 
+				(vertex_ccodes[1] == CLIP_CODE_LY) && 
+				(vertex_ccodes[2] == CLIP_CODE_LY) ) )
+
+			{
+				curr_poly->state |= POLY4D_STATE_CLIPPED;
+				continue;
+			} // end if
+
+		} // end if y planes
+
+		// clip/cull to z planes
+		if (clip_flags & CLIP_POLY_Z_PLANE)
+		{
+			// clip/cull only based on z clipping planes
+			// for each vertice determine if it's in the clipping region or beyond it and
+			// set the appropriate clipping code
+			// then actually clip all polygons to the near clipping plane, this will result
+			// in at most 1 additional triangle
+
+			// reset vertex counters, these help in classification
+			// of the final triangle 
+			num_verts_in = 0;
+
+			// vertex 0
+			if (curr_poly->tvlist[0].z > cam->far_clip_z)
+			{
+				vertex_ccodes[0] = CLIP_CODE_GZ;
+			} 
+			else
+				if (curr_poly->tvlist[0].z < cam->near_clip_z)
+				{
+					vertex_ccodes[0] = CLIP_CODE_LZ;
+				}
+				else
+				{
+					vertex_ccodes[0] = CLIP_CODE_IZ;
+					num_verts_in++;
+				} 
+
+				// vertex 1
+				if (curr_poly->tvlist[1].z > cam->far_clip_z)
+				{
+					vertex_ccodes[1] = CLIP_CODE_GZ;
+				} 
+				else
+					if (curr_poly->tvlist[1].z < cam->near_clip_z)
+					{
+						vertex_ccodes[1] = CLIP_CODE_LZ;
+					}
+					else
+					{
+						vertex_ccodes[1] = CLIP_CODE_IZ;
+						num_verts_in++;
+					}     
+
+					// vertex 2
+					if (curr_poly->tvlist[2].z > cam->far_clip_z)
+					{
+						vertex_ccodes[2] = CLIP_CODE_GZ;
+					} 
+					else
+						if (curr_poly->tvlist[2].z < cam->near_clip_z)
+						{
+							vertex_ccodes[2] = CLIP_CODE_LZ;
+						}
+						else
+						{
+							vertex_ccodes[2] = CLIP_CODE_IZ;
+							num_verts_in++;
+						} 
+
+						// test for trivial rejections, polygon completely beyond far or near
+						// z clipping planes
+						if ( ((vertex_ccodes[0] == CLIP_CODE_GZ) && 
+							(vertex_ccodes[1] == CLIP_CODE_GZ) && 
+							(vertex_ccodes[2] == CLIP_CODE_GZ) ) ||
+
+							((vertex_ccodes[0] == CLIP_CODE_LZ) && 
+							(vertex_ccodes[1] == CLIP_CODE_LZ) && 
+							(vertex_ccodes[2] == CLIP_CODE_LZ) ) )
+
+						{
+							// clip the poly completely out of frustrum
+							curr_poly->state |= POLY4D_STATE_CLIPPED;
+
+							// move on to next polygon
+							continue;
+						} // end if
+
+						// test if any vertex has protruded beyond near clipping plane?
+						if ( ( (vertex_ccodes[0] | vertex_ccodes[1] | vertex_ccodes[2]) & CLIP_CODE_LZ) )
+						{
+							if (num_verts_in == 1)
+							{
+								if ( vertex_ccodes[0] == CLIP_CODE_IZ)
+								{ v0 = 0; v1 = 1; v2 = 2; }
+								else 
+									if (vertex_ccodes[1] == CLIP_CODE_IZ)
+									{ v0 = 1; v1 = 2; v2 = 0; }
+									else
+									{ v0 = 2; v1 = 0; v2 = 1; }
+
+									curr_poly->tvlist[v0].pos.build(&curr_poly->tvlist[v1].pos, &v);                          
+
+									// the intersection occurs when z = near z, so t = 
+									t1 = ( (cam->near_clip_z - curr_poly->tvlist[v0].z) / v.z );
+
+									// now plug t back in and find x,y intersection with the plane
+									xi = curr_poly->tvlist[v0].x + v.x * t1;
+									yi = curr_poly->tvlist[v0].y + v.y * t1;
+
+									// now overwrite vertex with new vertex
+									curr_poly->tvlist[v1].x = xi;
+									curr_poly->tvlist[v1].y = yi;
+									curr_poly->tvlist[v1].z = cam->near_clip_z; 
+
+									// clip edge v0->v2
+									curr_poly->tvlist[v0].pos.build(&curr_poly->tvlist[v2].pos, &v);                          
+
+									// the intersection occurs when z = near z, so t = 
+									t2 = ( (cam->near_clip_z - curr_poly->tvlist[v0].z) / v.z );
+
+									// now plug t back in and find x,y intersection with the plane
+									xi = curr_poly->tvlist[v0].x + v.x * t2;
+									yi = curr_poly->tvlist[v0].y + v.y * t2;
+
+									// now overwrite vertex with new vertex
+									curr_poly->tvlist[v2].x = xi;
+									curr_poly->tvlist[v2].y = yi;
+									curr_poly->tvlist[v2].z = cam->near_clip_z; 
+
+									// now that we have both t1, t2, check if the poly is textured, if so clip
+									// texture coordinates
+									if (curr_poly->attr & POLY4D_ATTR_SHADE_MODE_TEXTURE)
+									{
+										ui = curr_poly->tvlist[v0].tx + (curr_poly->tvlist[v1].tx - curr_poly->tvlist[v0].tx)*t1;
+										vi = curr_poly->tvlist[v0].ty + (curr_poly->tvlist[v1].ty - curr_poly->tvlist[v0].ty)*t1;
+										curr_poly->tvlist[v1].tx = ui;
+										curr_poly->tvlist[v1].ty = vi;
+
+										ui = curr_poly->tvlist[v0].tx + (curr_poly->tvlist[v2].tx - curr_poly->tvlist[v0].tx)*t2;
+										vi = curr_poly->tvlist[v0].ty + (curr_poly->tvlist[v2].ty - curr_poly->tvlist[v0].ty)*t2;
+										curr_poly->tvlist[v2].tx = ui;
+										curr_poly->tvlist[v2].ty = vi;
+									} // end if textured
+
+									// finally, we have obliterated our pre-computed normal length
+									// it needs to be recomputed!!!!
+
+									// build u, v
+									curr_poly->tvlist[v0].pos.build(&curr_poly->tvlist[v1].pos, &u);
+									curr_poly->tvlist[v0].pos.build(&curr_poly->tvlist[v2].pos, &v);
+
+									// compute cross product
+									u.cross(&v, &n);
+
+									// compute length of normal accurately and store in poly nlength
+									// +- epsilon later to fix over/underflows
+									curr_poly->normal_length = vector3dLengthFast(&n); 
+
+							} // end if
+							else
+								if (num_verts_in == 2)
+								{ // num_verts = 2
+
+									// must be the case with num_verts_in = 2 
+									// we need to clip the triangle against the near clipping plane
+									// the clipping procedure is done to each edge leading away from
+									// the interior vertex, to clip we need to compute the intersection
+									// with the near z plane, this is done with a parametric equation of 
+									// the edge, however unlike case 1 above, the triangle will be split
+									// into two triangles, thus during the first clip, we will store the 
+									// results into a new triangle at the end of the rendering list, and 
+									// then on the last clip we will overwrite the triangle being clipped
+
+									// step 0: copy the polygon
+									memcpy(&temp_poly, curr_poly, sizeof(RenderPoly) );
+
+									// step 1: find vertex index for exterior vertex
+									if ( vertex_ccodes[0] == CLIP_CODE_LZ)
+									{ v0 = 0; v1 = 1; v2 = 2; }
+									else 
+										if (vertex_ccodes[1] == CLIP_CODE_LZ)
+										{ v0 = 1; v1 = 2; v2 = 0; }
+										else
+										{ v0 = 2; v1 = 0; v2 = 1; }
+
+										curr_poly->tvlist[v0].pos.build(&curr_poly->tvlist[v1].pos, &v);                          
+
+										// the intersection occurs when z = near z, so t = 
+										t1 = ( (cam->near_clip_z - curr_poly->tvlist[v0].z) / v.z );
+
+										// now plug t back in and find x,y intersection with the plane
+										x01i = curr_poly->tvlist[v0].x + v.x * t1;
+										y01i = curr_poly->tvlist[v0].y + v.y * t1;
+
+										// clip edge v0->v2
+										curr_poly->tvlist[v0].pos.build(&curr_poly->tvlist[v2].pos, &v);                          
+
+										// the intersection occurs when z = near z, so t = 
+										t2 = ( (cam->near_clip_z - curr_poly->tvlist[v0].z) / v.z );
+
+										// now plug t back in and find x,y intersection with the plane
+										x02i = curr_poly->tvlist[v0].x + v.x * t2;
+										y02i = curr_poly->tvlist[v0].y + v.y * t2; 
+
+										// now we have both intersection points, we must overwrite the inplace
+										// polygon's vertex 0 with the intersection point, this poly 1 of 2 from
+										// the split
+
+										// now overwrite vertex with new vertex
+										curr_poly->tvlist[v0].x = x01i;
+										curr_poly->tvlist[v0].y = y01i;
+										curr_poly->tvlist[v0].z = cam->near_clip_z; 
+
+										// now comes the hard part, we have to carefully create a new polygon
+										// from the 2 intersection points and v2, this polygon will be inserted
+										// at the end of the rendering list, but for now, we are building it up
+										// in  temp_poly
+
+										// so leave v2 alone, but overwrite v1 with v01, and overwrite v0 with v02
+										temp_poly.tvlist[v1].x = x01i;
+										temp_poly.tvlist[v1].y = y01i;
+										temp_poly.tvlist[v1].z = cam->near_clip_z;              
+
+										temp_poly.tvlist[v0].x = x02i;
+										temp_poly.tvlist[v0].y = y02i;
+										temp_poly.tvlist[v0].z = cam->near_clip_z;    
+
+										// now that we have both t1, t2, check if the poly is textured, if so clip
+										// texture coordinates
+										if (curr_poly->attr & POLY4D_ATTR_SHADE_MODE_TEXTURE)
+										{
+											// compute poly 1 new texture coordinates from split
+											u01i = curr_poly->tvlist[v0].tx + (curr_poly->tvlist[v1].tx - curr_poly->tvlist[v0].tx)*t1;
+											v01i = curr_poly->tvlist[v0].ty + (curr_poly->tvlist[v1].ty - curr_poly->tvlist[v0].ty)*t1;
+
+											// compute poly 2 new texture coordinates from split
+											u02i = curr_poly->tvlist[v0].tx + (curr_poly->tvlist[v2].tx - curr_poly->tvlist[v0].tx)*t2;
+											v02i = curr_poly->tvlist[v0].ty + (curr_poly->tvlist[v2].ty - curr_poly->tvlist[v0].ty)*t2;
+
+											// write them all at the same time         
+											// poly 1
+											curr_poly->tvlist[v0].tx = u01i;
+											curr_poly->tvlist[v0].ty = v01i;
+
+											// poly 2
+											temp_poly.tvlist[v0].tx = u02i;
+											temp_poly.tvlist[v0].ty = v02i;
+											temp_poly.tvlist[v1].tx = u01i;
+											temp_poly.tvlist[v1].ty = v01i;
+
+										} // end if textured
+
+
+										// finally, we have obliterated our pre-computed normal lengths
+										// they need to be recomputed!!!!
+
+										// poly 1 first, in place
+
+										// build u, v
+										curr_poly->tvlist[v0].pos.build(&curr_poly->tvlist[v1].pos, &u);
+										curr_poly->tvlist[v0].pos.build(&curr_poly->tvlist[v2].pos, &v);
+
+										// compute cross product
+										u.cross(&v, &n);
+
+										// compute length of normal accurately and store in poly nlength
+										// +- epsilon later to fix over/underflows
+										curr_poly->normal_length = vector3dLengthFast(&n); 
+
+										// now poly 2, temp_poly
+										// build u, v
+										temp_poly.tvlist[v0].pos.build(&temp_poly.tvlist[v1].pos, &u);
+										temp_poly.tvlist[v0].pos.build(&temp_poly.tvlist[v2].pos, &v);
+
+										// compute cross product
+										u.cross(&v, &n);
+
+										// compute length of normal accurately and store in poly nlength
+										// +- epsilon later to fix over/underflows
+										temp_poly.normal_length = vector3dLengthFast(&n); 
+
+										// now we are good to go, insert the polygon into list
+										// if the poly won't fit, it won't matter, the function will
+										// just return 0
+										rend_list->addPoly(&temp_poly);
+										//Insert_POLYF4DV2_RENDERLIST4DV2(rend_list, &temp_poly);
+
+								} // end else
+
+						} // end if near_z clipping has occured
+
+		} // end if z planes
+
+	} // end for poly
+};

@@ -224,10 +224,6 @@ void Canvas::render(bool backmove,bool cull){
 	{
 		obj = obj_list[s];
 		obj->toWorldPosition(TRANSFORM_LOCAL_TO_TRANS);
-		if (backmove)
-		{
-			lp_camera->removeBackFaceOfObj(obj);
-		}
 		if (cull)
 		{
 			lp_camera->cullObject(obj);
@@ -236,10 +232,16 @@ void Canvas::render(bool backmove,bool cull){
 		{
 			continue;
 		}
+
+		if (backmove)
+		{
+			lp_camera->removeBackFaceOfObj(obj);
+		}
+		
+		
 		lightObject(obj);//光照放在这里是因为要在世界空间处理光照，下面的函数如果加一个flag控制要不要偏转顶点法线，也可以换位置(现在有了)
 		transformObject(obj,&(lp_camera->mcam),TRANSFORM_TRANS_ONLY,false,false);
-		lp_camera->cameraToPerspective_object(obj);
-		lp_camera->perspectiveToScreen_object(obj);
+
 		Poly* temp;
 		RenderPoly* renderpoly_temp;
 		Point3d* p1;Point3d* p2;Point3d* p3;
@@ -251,10 +253,35 @@ void Canvas::render(bool backmove,bool cull){
 				renderlist_all->addPoly(temp);
 			}
 		}
+
+		clipPolyFromRenderlist(renderlist_all,lp_camera,7);
+
+		lp_camera->cameraToPerspective_renderlist(renderlist_all);
+		lp_camera->perspectiveToScreen_renderlist(renderlist_all);
+		//lp_camera->cameraToPerspective_object(obj);
+		//lp_camera->perspectiveToScreen_object(obj);
+		//Poly* temp;
+		//RenderPoly* renderpoly_temp;
+		//Point3d* p1;Point3d* p2;Point3d* p3;
+		//for (i = 0;i<obj->num_polys;i++)
+		//{
+		//	temp = obj->lp_polys + i;
+		//	if(temp != NULL&&temp->avaliable()){
+		//		temp->calculateAvgZ();
+		//		renderlist_all->addPoly(temp);
+		//	}
+		//}
+
+		//暂时先放这里(不行，这不是相机空间了)
+		//clipPolyFromRenderlist(renderlist_all,lp_camera,7);
+
 		quickSort(renderlist_all->lp_polys,0,renderlist_all->num_polys - 1);
 		for (i = 0;i<renderlist_all->num_polys;i++)
 		{
-			renderpoly_temp = renderlist_all->lp_polys[i];			
+			renderpoly_temp = renderlist_all->lp_polys[i];
+
+			if(!renderpoly_temp->avaliable())continue;
+
 			/*drawLine(p1->x,p1->y,p2->x,p2->y,0xff00ffff);
 			drawLine(p2->x,p2->y,p3->x,p3->y,0xff00ffff);
 			drawLine(p3->x,p3->y,p1->x,p1->y,0xff00ffff);*/

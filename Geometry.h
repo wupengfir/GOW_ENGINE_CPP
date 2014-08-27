@@ -138,6 +138,8 @@ public:
 		w = source->w;
 	}
 
+	void build(Point3d* target,Vector3d* storage);
+
 	Point3d(){
 		w = 1;
 	};
@@ -476,17 +478,20 @@ public:
 		num_polys = 0;
 	};
 
-	//inline void addPoly(Poly* poly){
-	//	if(polys.capacity() == 0){
-	//		polys.resize(1024);
-	//	}
-	//	else if (polys.capacity() == num_polys)
-	//	{
-	//		polys.resize(polys.capacity()*2);
-	//	}
-	//	polys[num_polys] = poly;
-	//	num_polys++;
-	//}
+	inline void addPoly(RenderPoly* poly){
+		if(polys.capacity() == 0){
+			polys.resize(1024);
+			lp_polys.resize(1024);
+		}
+		else if (polys.capacity() == num_polys)
+		{
+			polys.resize(polys.capacity()*2);
+			lp_polys.resize(polys.capacity()*2);
+		}
+		polys[num_polys] = *poly;
+		lp_polys[num_polys] = &polys[num_polys];
+		num_polys++;
+	}
 	inline void addPoly(Poly* poly){
 		if(polys.capacity() == 0){
 			polys.resize(1024);
