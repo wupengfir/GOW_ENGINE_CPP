@@ -11,6 +11,8 @@ Canvas *lp_canvas = NULL;
 bool closed = false;
 
 Object3d cube;
+Object3d terrian;
+
 float cx[8] = {-1,-1,1,1,-1,1,1,-1};
 float cy[8] = {-1,-1,-1,-1,1,1,1,1};
 float cz[8] = {0,2,0,2,0,0,2,2};
@@ -366,7 +368,7 @@ int WINAPI WinMain(	HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,
 	loadObject_ASC("car01.asc",&cube,&position,&scale,&rotation,POLY4D_ATTR_SHADE_MODE_TEXTURE);
 	//loadObject_COB("cube_flat_textured_01.cob",&cube,&position,&scale,0,POLY4D_ATTR_SHADE_MODE_TEXTURE,true);
 	loadBitmapImage(&image,"img/123.bmp");cube.texture = &image;
-
+	loadTerrain(&terrian,5000,5000,1000,"img/height.bmp","img/map.bmp",0xffffffff,NULL,NULL,POLY4D_ATTR_SHADE_MODE_LINE);
 	Camera *camera = new Camera();
 	Vector3d dir;
 	dir.init(0,0,0,1);
@@ -377,8 +379,8 @@ int WINAPI WinMain(	HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,
 
 	camera->init(Camera::CAMERA_TYPE_EULER,pos,dir,target,100,1000,90,SCREEN_WIDTH,SCREEN_HEIGHT);
 	lp_canvas->setCamera(camera);
-	lp_canvas->addObject(&cube);
-
+	//lp_canvas->addObject(&cube);
+	lp_canvas->addObject(&terrian);
 	MSG		   msg;		 // generic message
 	while(TRUE)
 		{		

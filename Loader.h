@@ -7,6 +7,7 @@ public:
 	int width;
 	int height;
 	int power_of_two;
+	int bit_count;
 	Color *data;
 
 	BitmapData(){
@@ -25,3 +26,5 @@ void loadObject_COB(char* path,Object3d* obj,Point3d* p_pos,Vector3d* p_scale,Ma
 void computeVertexNormalVector(Object3d* obj);
 //只加载24位的
 void loadBitmapImage(BitmapData *bitmapdata,char* path);
+
+void loadTerrain(Object3d* obj,int width,int length,int max_height,char* height_path,char* texture_path,UINT d_color,Point3d* pos,Vector3d* dir,int attr);

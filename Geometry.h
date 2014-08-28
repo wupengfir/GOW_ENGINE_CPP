@@ -15,6 +15,7 @@
 #define POLY4D_ATTR_SHADE_MODE_GOURAUD	0x0080
 #define POLY4D_ATTR_SHADE_MODE_PHONG	0x0100
 #define POLY4D_ATTR_SHADE_MODE_TEXTURE	0x0200
+#define POLY4D_ATTR_SHADE_MODE_LINE		0x0400
 
 #define POLY4D_ATTR_ENABLE_MATERIAL		0x0800
 #define POLY4D_ATTR_DISABLE_MATERIAL	0x1000
@@ -435,35 +436,11 @@ public:
 		temp = NULL;
 	};
 
-	//inline void rotationX(float deg){
-	//	float rad = DEG_TO_RAD(deg - rx);
-	//	rx = deg;
-	//	Matrix mx(44);
-	//	float cos_t = cos(rad);
-	//	float sin_t = sin(rad);
-	//	float x_data[16] = {1,0,0,0,
-	//						0,cos_t,-sin_t,0,
-	//						0,sin_t,cos_t,0,
-	//						0,0,0,1};
-	//	mx.init(x_data);
-	//	transformObject(this,&mx,TRANSFORM_LOCAL_ONLY,false,true);
-	//};
+	void rotationX(float deg);
 
 	void rotationY(float deg);
 
-	//inline void rotationZ(float deg){
-	//	float rad = DEG_TO_RAD(deg - rz);
-	//	rz = deg;
-	//	Matrix mx(44);
-	//	float cos_t = cos(rad);
-	//	float sin_t = sin(rad);
-	//	float z_data[16] = {cos_t,-sin_t,0,0,
-	//						sin_t,cos_t,0,0,
-	//						0,0,1,0,
-	//						0,0,0,1};
-	//	mx.init(z_data);
-	//	transformObject(this,&mx,TRANSFORM_LOCAL_ONLY,false,true);
-	//};
+	void rotationZ(float deg);
 
 };
 
@@ -501,6 +478,10 @@ public:
 		{
 			polys.resize(polys.capacity()*2);
 			lp_polys.resize(polys.capacity()*2);
+			for (int i = 0;i<num_polys;i++)
+			{
+				lp_polys[i] = &polys[i];
+			}
 		}
 		polys[num_polys].attr = poly->attr;
 		polys[num_polys].state = poly->state;

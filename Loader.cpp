@@ -369,24 +369,48 @@ void loadBitmapImage(BitmapData *bitmapdata,char* path){
 		return;
 		//fin.seekg(sizeof(RGBQUAD),std::ios::cur);
 	}
+	bitmapdata->bit_count = header.biBitCount;
 	UINT tempdata = 0;
-	int lineLength = (bitmapdata->width*3 + 3)/4*4;
+	int lineLength = (bitmapdata->width*(header.biBitCount/8) + 3)/4*4;
 	temp_data = new char[lineLength*bitmapdata->height];
 	fin.read(temp_data,lineLength*bitmapdata->height);
 	for (int i = 0;i<bitmapdata->height;i++)
 	{
 		for (int j = 0;j<bitmapdata->width;j++)
 		{
-			if (flip)
-			{
-				bitmapdata->data[(bitmapdata->height - i - 1)*bitmapdata->width+j].b = (UCHAR)temp_data[i*lineLength + j*3];
-				bitmapdata->data[(bitmapdata->height - i - 1)*bitmapdata->width+j].g = (UCHAR)temp_data[i*lineLength + j*3 + 1];
-				bitmapdata->data[(bitmapdata->height - i - 1)*bitmapdata->width+j].r = (UCHAR)temp_data[i*lineLength + j*3 + 2];
-			}else{
-				bitmapdata->data[i*bitmapdata->width+j].b = (UCHAR)temp_data[i*lineLength + j*3];
-				bitmapdata->data[i*bitmapdata->width+j].g = (UCHAR)temp_data[i*lineLength + j*3 + 1];
-				bitmapdata->data[i*bitmapdata->width+j].r = (UCHAR)temp_data[i*lineLength + j*3 + 2];
-			}			
+			switch(header.biBitCount){
+			case 8:
+				if (flip)
+				{
+					bitmapdata->data[(bitmapdata->height - i - 1)*bitmapdata->width+j].b = (UCHAR)temp_data[i*lineLength + j*3];
+				}else{
+					bitmapdata->data[i*bitmapdata->width+j].b = (UCHAR)temp_data[i*lineLength + j*3];
+				}
+				break;
+			case 16:
+				if (flip)
+				{
+					bitmapdata->data[(bitmapdata->height - i - 1)*bitmapdata->width+j].b = (UCHAR)temp_data[i*lineLength + j*3];
+					bitmapdata->data[(bitmapdata->height - i - 1)*bitmapdata->width+j].g = (UCHAR)temp_data[i*lineLength + j*3 + 1];
+				}else{
+					bitmapdata->data[i*bitmapdata->width+j].b = (UCHAR)temp_data[i*lineLength + j*3];
+					bitmapdata->data[i*bitmapdata->width+j].g = (UCHAR)temp_data[i*lineLength + j*3 + 1];
+				}
+				break;
+			case 24:
+				if (flip)
+				{
+					bitmapdata->data[(bitmapdata->height - i - 1)*bitmapdata->width+j].b = (UCHAR)temp_data[i*lineLength + j*3];
+					bitmapdata->data[(bitmapdata->height - i - 1)*bitmapdata->width+j].g = (UCHAR)temp_data[i*lineLength + j*3 + 1];
+					bitmapdata->data[(bitmapdata->height - i - 1)*bitmapdata->width+j].r = (UCHAR)temp_data[i*lineLength + j*3 + 2];
+				}else{
+					bitmapdata->data[i*bitmapdata->width+j].b = (UCHAR)temp_data[i*lineLength + j*3];
+					bitmapdata->data[i*bitmapdata->width+j].g = (UCHAR)temp_data[i*lineLength + j*3 + 1];
+					bitmapdata->data[i*bitmapdata->width+j].r = (UCHAR)temp_data[i*lineLength + j*3 + 2];
+				}
+				break;
+			}
+						
 		}
 	}
 	delete[] temp_data;
@@ -394,4 +418,103 @@ void loadBitmapImage(BitmapData *bitmapdata,char* path){
 
 BitmapData::~BitmapData(){
 	delete[] data;
+};
+
+void loadTerrain(Object3d* obj,int width,int length,int max_height,char* height_path,char* texture_path,UINT d_color,Point3d* pos,Vector3d* dir,int attr){
+	BitmapData height_data;
+	//texture是要返回的，不能在栈上创建
+	BitmapData* texture_data = new BitmapData();
+	int current_width;
+	if (pos)
+	{
+		obj->world_pos.copy(pos);
+	}else{
+		obj->world_pos.init(0,0,0);
+	}
+	obj->avg_radius = width/2;
+	obj->max_radius = width/2;
+	if (height_path != NULL)
+	{
+		loadBitmapImage(&height_data,height_path);
+		obj->init(height_data.width*height_data.height,(height_data.width - 1)*(height_data.height - 1)*2,1);
+		float xs = -width/2;float dx = width/height_data.width;
+		float ys = -length/2;float dy = length/height_data.height;
+		float current_y;
+		for (int i = 0;i<height_data.height;i++)
+		{
+			current_y = ys + i*dy;
+			for (int j = 0;j<height_data.width;j++){
+				obj->lp_vertex_local[i*height_data.width + j].x = xs + j*dx;
+				obj->lp_vertex_local[i*height_data.width + j].y = (float)height_data.data[i*height_data.width + j].b;
+				obj->lp_vertex_local[i*height_data.width + j].z = current_y;
+				//复制local到trans
+				obj->lp_vertex_trans[i*height_data.width + j] = obj->lp_vertex_local[i*height_data.width + j];
+			}
+		}
+		for (int i = 0;i<height_data.height - 1;i++)
+		{
+			for (int j = 0;j<height_data.width - 1;j++){
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2].v_index_list[0] = i*height_data.width + j;
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2].v_index_list[1] = i*height_data.width + j + 1;
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2].v_index_list[2] = (i + 1)*height_data.width + j;
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2].color.argb = d_color;
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2].attr = attr;
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].v_index_list[0] = i*height_data.width + j + 1;
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].v_index_list[1] = i*(height_data.width + 1) + j + 1;
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].v_index_list[2] = (i + 1)*height_data.width + j;
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].color.argb = d_color;
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].attr = attr;
+			}
+		}
+		computeVertexNormalVector(obj);
+		if (dir)
+		{
+			obj->rotationX(RAD_TO_DEG(dir->x));
+			obj->rotationY(RAD_TO_DEG(dir->y));
+			obj->rotationZ(RAD_TO_DEG(dir->z));
+		}
+	}else{
+		return;
+	}
+	if (texture_path != NULL)
+	{
+		float dtx = 1/(height_data.width -1);
+		float dty = 1/(height_data.height -1);
+		loadBitmapImage(texture_data,texture_path);
+		obj->texture = texture_data;
+		obj->lp_texture_position_list = new Point2d[(height_data.width - 1)*(height_data.height - 1)*2*3];
+		current_width = height_data.height - 1;
+		for (int i = 0;i<current_width;i++)
+		{
+			for (int j = 0;j<height_data.width - 1;j++){
+				obj->lp_texture_position_list[i*current_width + j].x = j*dtx;
+				obj->lp_texture_position_list[i*current_width + j].y = i*dty;
+				obj->lp_texture_position_list[i*current_width + j + 1].x = (j + 1)*dtx;
+				obj->lp_texture_position_list[i*current_width + j + 1].y = i*dty;
+				obj->lp_texture_position_list[i*current_width + j + 2].x = (j)*dtx;
+				obj->lp_texture_position_list[i*current_width + j + 2].y = (i + 1)*dty;
+				obj->lp_texture_position_list[i*current_width + j + 3].x = (j + 1)*dtx;
+				obj->lp_texture_position_list[i*current_width + j + 3].y = i*dty;
+				obj->lp_texture_position_list[i*current_width + j + 4].x = (j + 1)*dtx;
+				obj->lp_texture_position_list[i*current_width + j + 4].y = (i + 1)*dty;
+				obj->lp_texture_position_list[i*current_width + j + 5].x = (j)*dtx;
+				obj->lp_texture_position_list[i*current_width + j + 6].y = (i + 1)*dty;
+			}
+		}
+
+		for (int i = 0;i<height_data.height - 1;i++)
+		{
+			for (int j = 0;j<height_data.width - 1;j++){
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2].lp_texture_position_object = obj->lp_texture_position_list;
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2].t_index_list[0] = i*(height_data.width - 1)*3 + j*3;
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2].t_index_list[1] = i*(height_data.width - 1)*3 + j*3 + 1;
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2].t_index_list[2] = i*(height_data.width - 1)*3 + j*3 + 2;
+
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].lp_texture_position_object = obj->lp_texture_position_list;
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].t_index_list[0] = i*(height_data.width - 1)*3 + j*3 + 3;
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].t_index_list[1] = i*(height_data.width - 1)*3 + j*3 + 4;
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].t_index_list[2] = i*(height_data.width - 1)*3 + j*3 + 5;
+			}
+		}
+	}
 };

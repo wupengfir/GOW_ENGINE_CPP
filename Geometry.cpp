@@ -153,10 +153,38 @@ void Object3d::rotationY(float deg){
 	float cos_t = cos(rad);
 	float sin_t = sin(rad);
 	float y_data[16] = {cos_t,0,-sin_t,0,
-		0,1,0,0,
-		sin_t,0,cos_t,0,
-		0,0,0,1};
+							0,1,0,0,
+							sin_t,0,cos_t,0,
+							0,0,0,1};
 	mx.init(y_data);
+	transformObject(this,&mx,TRANSFORM_LOCAL_ONLY,false,true);
+};
+
+void Object3d::rotationX(float deg){
+	float rad = DEG_TO_RAD(deg - rx);
+	rx = deg;
+	Matrix mx(44);
+	float cos_t = cos(rad);
+	float sin_t = sin(rad);
+	float x_data[16] = {1,0,0,0,
+						0,cos_t,sin_t,0,
+						0,-sin_t,cos_t,0,
+						0,0,0,1};
+	mx.init(x_data);
+	transformObject(this,&mx,TRANSFORM_LOCAL_ONLY,false,true);
+};
+
+ void Object3d::rotationZ(float deg){
+	float rad = DEG_TO_RAD(deg - rz);
+	rz = deg;
+	Matrix mx(44);
+	float cos_t = cos(rad);
+	float sin_t = sin(rad);
+	float z_data[16] = {cos_t,sin_t,0,0,
+						-sin_t,cos_t,0,0,
+						0,0,1,0,
+						0,0,0,1};
+	mx.init(z_data);
 	transformObject(this,&mx,TRANSFORM_LOCAL_ONLY,false,true);
 };
 
@@ -196,7 +224,7 @@ void Object3d::init(int num_v,int num_p,int num_f){
 
 Object3d::~Object3d(){
 	delete lp_head_vlist_local;
-	delete lp_head_vlist_trans;
+	delete lp_head_vlist_trans;//lp_head_vlist_local = lp_vertex_local;lp_head_vlist_trans = lp_vertex_trans;所以不释放lp_vertex_local，lp_vertex_trans
 	delete lp_polys;
 	delete lp_texture_position_list;
 	lp_polys = NULL;

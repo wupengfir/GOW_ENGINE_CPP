@@ -282,9 +282,16 @@ void Canvas::render(bool backmove,bool cull){
 
 			if(!renderpoly_temp->avaliable())continue;
 
-			/*drawLine(p1->x,p1->y,p2->x,p2->y,0xff00ffff);
-			drawLine(p2->x,p2->y,p3->x,p3->y,0xff00ffff);
-			drawLine(p3->x,p3->y,p1->x,p1->y,0xff00ffff);*/
+			if (temp->attr&POLY4D_ATTR_SHADE_MODE_LINE)
+			{
+				p1 = &(renderpoly_temp->tvlist[0].pos);
+				p2 = &(renderpoly_temp->tvlist[1].pos);
+				p3 = &(renderpoly_temp->tvlist[2].pos);
+				drawLine(p1->x,p1->y,p2->x,p2->y,0xff00ffff);
+				drawLine(p2->x,p2->y,p3->x,p3->y,0xff00ffff);
+				drawLine(p3->x,p3->y,p1->x,p1->y,0xff00ffff);
+			}
+			
 			if (temp->attr&POLY4D_ATTR_SHADE_MODE_FLAT)
 			{
 				p1 = &(renderpoly_temp->tvlist[0].pos);
