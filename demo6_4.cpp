@@ -264,7 +264,7 @@ int Game_Main(void *parms = NULL, int num_parms = 0)
 	//lp_canvas->showImage(&image,300,100);
 
 
-	lp_canvas->render();
+	lp_canvas->render(true,true);
 
 
 	lp_canvas->unlock();
@@ -368,7 +368,10 @@ int WINAPI WinMain(	HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,
 	loadObject_ASC("car01.asc",&cube,&position,&scale,&rotation,POLY4D_ATTR_SHADE_MODE_TEXTURE);
 	//loadObject_COB("cube_flat_textured_01.cob",&cube,&position,&scale,0,POLY4D_ATTR_SHADE_MODE_TEXTURE,true);
 	loadBitmapImage(&image,"img/123.bmp");cube.texture = &image;
-	loadTerrain(&terrian,5000,5000,1000,"img/height.bmp","img/map.bmp",0xffffffff,NULL,NULL,POLY4D_ATTR_SHADE_MODE_LINE);
+
+	Point3d temp_pos;
+	temp_pos.init(0,-200,0);
+	loadTerrain(&terrian,5000,5000,1000,"img/height.bmp","img/map.bmp",0xffffffff,&temp_pos,NULL,POLY4D_ATTR_SHADE_MODE_TEXTURE);
 	Camera *camera = new Camera();
 	Vector3d dir;
 	dir.init(0,0,0,1);
@@ -377,7 +380,7 @@ int WINAPI WinMain(	HINSTANCE hinstance,HINSTANCE hprevinstance,LPSTR lpcmdline,
 	Point3d target;
 	target.init(0,0,0,0);
 
-	camera->init(Camera::CAMERA_TYPE_EULER,pos,dir,target,100,1000,90,SCREEN_WIDTH,SCREEN_HEIGHT);
+	camera->init(Camera::CAMERA_TYPE_EULER,pos,dir,target,100,2000,90,SCREEN_WIDTH,SCREEN_HEIGHT);
 	lp_canvas->setCamera(camera);
 	//lp_canvas->addObject(&cube);
 	lp_canvas->addObject(&terrian);

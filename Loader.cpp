@@ -364,11 +364,11 @@ void loadBitmapImage(BitmapData *bitmapdata,char* path){
 		bitmapdata->power_of_two = power;
 	}
 	bitmapdata->data = new Color[bitmapdata->width*bitmapdata->height];
-	if (header.biBitCount != 24)
-	{
-		return;
-		//fin.seekg(sizeof(RGBQUAD),std::ios::cur);
-	}
+	//if (header.biBitCount != 24)
+	//{
+	//	return;
+	//	//fin.seekg(sizeof(RGBQUAD),std::ios::cur);
+	//}
 	bitmapdata->bit_count = header.biBitCount;
 	UINT tempdata = 0;
 	int lineLength = (bitmapdata->width*(header.biBitCount/8) + 3)/4*4;
@@ -438,7 +438,7 @@ void loadTerrain(Object3d* obj,int width,int length,int max_height,char* height_
 		loadBitmapImage(&height_data,height_path);
 		obj->init(height_data.width*height_data.height,(height_data.width - 1)*(height_data.height - 1)*2,1);
 		float xs = -width/2;float dx = width/height_data.width;
-		float ys = -length/2;float dy = length/height_data.height;
+		float ys = length/2;float dy = -length/height_data.height;
 		float current_y;
 		for (int i = 0;i<height_data.height;i++)
 		{
@@ -460,7 +460,7 @@ void loadTerrain(Object3d* obj,int width,int length,int max_height,char* height_
 				obj->lp_polys[(i*(height_data.width - 1) + j)*2].color.argb = d_color;
 				obj->lp_polys[(i*(height_data.width - 1) + j)*2].attr = attr;
 				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].v_index_list[0] = i*height_data.width + j + 1;
-				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].v_index_list[1] = i*(height_data.width + 1) + j + 1;
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].v_index_list[1] = (i + 1)*height_data.width + j + 1;
 				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].v_index_list[2] = (i + 1)*height_data.width + j;
 				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].color.argb = d_color;
 				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].attr = attr;
@@ -478,27 +478,27 @@ void loadTerrain(Object3d* obj,int width,int length,int max_height,char* height_
 	}
 	if (texture_path != NULL)
 	{
-		float dtx = 1/(height_data.width -1);
-		float dty = 1/(height_data.height -1);
+		float dtx = 1/(float)(height_data.width -1);
+		float dty = 1/(float)(height_data.height -1);
 		loadBitmapImage(texture_data,texture_path);
 		obj->texture = texture_data;
 		obj->lp_texture_position_list = new Point2d[(height_data.width - 1)*(height_data.height - 1)*2*3];
 		current_width = height_data.height - 1;
-		for (int i = 0;i<current_width;i++)
+		for (int i = 0;i<current_width - 1;i++)
 		{
-			for (int j = 0;j<height_data.width - 1;j++){
-				obj->lp_texture_position_list[i*current_width + j].x = j*dtx;
-				obj->lp_texture_position_list[i*current_width + j].y = i*dty;
-				obj->lp_texture_position_list[i*current_width + j + 1].x = (j + 1)*dtx;
-				obj->lp_texture_position_list[i*current_width + j + 1].y = i*dty;
-				obj->lp_texture_position_list[i*current_width + j + 2].x = (j)*dtx;
-				obj->lp_texture_position_list[i*current_width + j + 2].y = (i + 1)*dty;
-				obj->lp_texture_position_list[i*current_width + j + 3].x = (j + 1)*dtx;
-				obj->lp_texture_position_list[i*current_width + j + 3].y = i*dty;
-				obj->lp_texture_position_list[i*current_width + j + 4].x = (j + 1)*dtx;
-				obj->lp_texture_position_list[i*current_width + j + 4].y = (i + 1)*dty;
-				obj->lp_texture_position_list[i*current_width + j + 5].x = (j)*dtx;
-				obj->lp_texture_position_list[i*current_width + j + 6].y = (i + 1)*dty;
+			for (int j = 0;j<height_data.height - 1;j++){
+				obj->lp_texture_position_list[(i*current_width + j)*6].x = j*dtx;
+				obj->lp_texture_position_list[(i*current_width + j)*6].y = i*dty;
+				obj->lp_texture_position_list[(i*current_width + j)*6 + 1].x = (j + 1)*dtx;
+				obj->lp_texture_position_list[(i*current_width + j)*6 + 1].y = i*dty;
+				obj->lp_texture_position_list[(i*current_width + j)*6 + 2].x = (j)*dtx;
+				obj->lp_texture_position_list[(i*current_width + j)*6 + 2].y = (i + 1)*dty;
+				obj->lp_texture_position_list[(i*current_width + j)*6 + 3].x = (j + 1)*dtx;
+				obj->lp_texture_position_list[(i*current_width + j)*6 + 3].y = i*dty;
+				obj->lp_texture_position_list[(i*current_width + j)*6 + 4].x = (j + 1)*dtx;
+				obj->lp_texture_position_list[(i*current_width + j)*6 + 4].y = (i + 1)*dty;
+				obj->lp_texture_position_list[(i*current_width + j)*6 + 5].x = (j)*dtx;
+				obj->lp_texture_position_list[(i*current_width + j)*6 + 5].y = (i + 1)*dty;
 			}
 		}
 
@@ -506,14 +506,14 @@ void loadTerrain(Object3d* obj,int width,int length,int max_height,char* height_
 		{
 			for (int j = 0;j<height_data.width - 1;j++){
 				obj->lp_polys[(i*(height_data.width - 1) + j)*2].lp_texture_position_object = obj->lp_texture_position_list;
-				obj->lp_polys[(i*(height_data.width - 1) + j)*2].t_index_list[0] = i*(height_data.width - 1)*3 + j*3;
-				obj->lp_polys[(i*(height_data.width - 1) + j)*2].t_index_list[1] = i*(height_data.width - 1)*3 + j*3 + 1;
-				obj->lp_polys[(i*(height_data.width - 1) + j)*2].t_index_list[2] = i*(height_data.width - 1)*3 + j*3 + 2;
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2].t_index_list[0] = i*(height_data.width - 1)*6 + j*6;
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2].t_index_list[1] = i*(height_data.width - 1)*6 + j*6 + 1;
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2].t_index_list[2] = i*(height_data.width - 1)*6 + j*6 + 2;
 
 				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].lp_texture_position_object = obj->lp_texture_position_list;
-				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].t_index_list[0] = i*(height_data.width - 1)*3 + j*3 + 3;
-				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].t_index_list[1] = i*(height_data.width - 1)*3 + j*3 + 4;
-				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].t_index_list[2] = i*(height_data.width - 1)*3 + j*3 + 5;
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].t_index_list[0] = i*(height_data.width - 1)*6 + j*6 + 3;
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].t_index_list[1] = i*(height_data.width - 1)*6 + j*6 + 4;
+				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].t_index_list[2] = i*(height_data.width - 1)*6 + j*6 + 5;
 			}
 		}
 	}
