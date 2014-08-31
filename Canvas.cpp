@@ -239,7 +239,7 @@ void Canvas::render(bool backmove,bool cull){
 		}
 		
 		
-		lightObject(obj);//光照放在这里是因为要在世界空间处理光照，下面的函数如果加一个flag控制要不要偏转顶点法线，也可以换位置(现在有了)
+		//lightObject(obj);//光照放在这里是因为要在世界空间处理光照，下面的函数如果加一个flag控制要不要偏转顶点法线，也可以换位置(现在有了)
 		transformObject(obj,&(lp_camera->mcam),TRANSFORM_TRANS_ONLY,false,false);
 
 		Poly* temp;
@@ -255,7 +255,7 @@ void Canvas::render(bool backmove,bool cull){
 		}
 
 		clipPolyFromRenderlist(renderlist_all,lp_camera,7);
-
+		lightObject(obj);
 		lp_camera->cameraToPerspective_renderlist(renderlist_all);
 		lp_camera->perspectiveToScreen_renderlist(renderlist_all);
 		//lp_camera->cameraToPerspective_object(obj);
@@ -325,6 +325,9 @@ void Canvas::lightObject(Object3d* obj){
 		for (int k = 0;k<obj->num_polys;k++)
 		{
 			lp_poly = (obj->lp_polys) + k;
+			if(!lp_poly->avaliable()){
+				continue;
+			}
 			r_sum = 0;
 			g_sum = 0;
 			b_sum = 0;

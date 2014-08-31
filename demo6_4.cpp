@@ -120,6 +120,10 @@ void checkKey(){
 	}
 }
 
+void checkPosition(){
+
+}
+
 float ry = 0;
 UINT start_clock = 0;
 BitmapData image;
@@ -284,6 +288,8 @@ int Game_Main(void *parms = NULL, int num_parms = 0)
 	return(1);
 
 }
+
+
 
 void createLight(){
 	Light *light = NULL;
