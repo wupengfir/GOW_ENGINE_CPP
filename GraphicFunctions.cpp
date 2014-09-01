@@ -1040,7 +1040,7 @@ void drawBottomTextureTriangle(Vertex3d *v1,Vertex3d *v2,Vertex3d *v3,BitmapData
 			txe += dtx_right;
 			tys += dty_left;
 			tye += dty_right;
-			//////////////////
+			////////////////// 
 			
 			if (clip_xe<min_clip_x)
 			{

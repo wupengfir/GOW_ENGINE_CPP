@@ -484,7 +484,7 @@ void loadTerrain(Object3d* obj,int width,int length,int max_height,char* height_
 		obj->texture = texture_data;
 		obj->lp_texture_position_list = new Point2d[(height_data.width - 1)*(height_data.height - 1)*2*3];
 		current_width = height_data.height - 1;
-		for (int i = 0;i<current_width - 1;i++)
+		for (int i = 0;i<current_width;i++)
 		{
 			for (int j = 0;j<height_data.height - 1;j++){
 				obj->lp_texture_position_list[(i*current_width + j)*6].x = j*dtx;
