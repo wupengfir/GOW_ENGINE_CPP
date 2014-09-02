@@ -114,7 +114,7 @@ void Canvas::init(HINSTANCE hinstance,WNDPROC callback,int width,int height,int 
 		main_handler =  CreateWindowEx(NULL,                  // extended style
 			WINDOW_CLASS_NAME,     // class
 			"Demo", // title
-			WS_OVERLAPPED | WS_VISIBLE,
+			WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION,
 			0,0,	  // initial x,y
 			width,height,  // initial width, height
 			NULL,	  // handle to parent 
@@ -141,7 +141,7 @@ void Canvas::init(HINSTANCE hinstance,WNDPROC callback,int width,int height,int 
 			window_rect.right - window_rect.left, // width
 			window_rect.bottom - window_rect.top, // height
 			FALSE);
-
+		
 		// show the window, so there's no garbage on first render
 		ShowWindow(main_handler, SW_SHOW);
 	}else{
@@ -187,6 +187,12 @@ void Canvas::getDevice(){
 		ddsd.dwWidth = width;
 		ddsd.dwHeight = height;
 		lp_directdraw->CreateSurface(&ddsd,&lp_back_surface,NULL);
+
+		LPDIRECTDRAWCLIPPER clipper;
+		lp_directdraw->CreateClipper(0,&clipper,NULL);
+		clipper->SetHWnd(0,main_handler);
+		lp_primary_surface->SetClipper(clipper);
+
 	}else{
 		ddsd.ddsCaps.dwCaps = DDSCAPS_BACKBUFFER;
 		lp_primary_surface->GetAttachedSurface(&(ddsd.ddsCaps),&lp_back_surface);
