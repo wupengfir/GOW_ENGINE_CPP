@@ -15,6 +15,20 @@ inline void Mem_Set_QUAD(void *dest, UINT data, int count)
 	} 
 };
 
+class ZBuffer{
+public:
+	static const int bit_16 = 0;
+	static const int bit_32 = 1;
+	int attr;
+	int width;
+	int height;
+	float* buffer;
+
+	void clear(UINT data = 0xffffffff);
+	ZBuffer(int width,int height,int attr = 1);
+	~ZBuffer(void);
+};
+
 class Camera;
 class Point2d;
 class Point3d;
@@ -47,6 +61,7 @@ public:
 	int window_client_y0;
 	Camera* lp_camera;
 	RenderList* renderlist_all;
+	ZBuffer *z_buffer;
 	std::vector<Object3d*> obj_list;
 	std::vector<RenderList*> renderlist_list;
 	std::vector<Light*> LightList;

@@ -18,6 +18,12 @@
 
 #define CLIP_CODE_NULL 0x0000
 
+#define TRI_TYPE_NONE 0;
+#define TRI_TYPE_TOP 1;
+#define TRI_TYPE_BOTTOM 2;
+#define TRI_TYPE_GENERAL 3;
+
+
 #include "Common.h"
 class Color;
 class BitmapData;
@@ -43,3 +49,8 @@ void drawTopTextureTriangle(Vertex3d *v1,Vertex3d *v2,Vertex3d *v3,BitmapData *t
 void drawBottomTextureTriangle(Vertex3d *v1,Vertex3d *v2,Vertex3d *v3,BitmapData *texture,UCHAR *dest_buffer, int mempitch,Color color);
 
 void clipPolyFromRenderlist(RenderList* render_list,Camera* cam,int mode);
+
+
+void Draw_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z_buffer,int z_pitch);
+void Draw_Gouraud_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z_buffer,int z_pitch);
+void drawTextureTriangle_zb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_buffer, int mempitch,float* z_buffer,int z_pitch);

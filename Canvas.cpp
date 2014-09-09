@@ -86,6 +86,7 @@ void Canvas::unlock(){
 
 void Canvas::init(HINSTANCE hinstance,WNDPROC callback,int width,int height,int bpp,int windowed){
 	reset();
+	z_buffer = new ZBuffer(width,height);
 	main_instance = hinstance;
 	is_window = windowed;
 	this->bpp = bpp;
@@ -220,12 +221,19 @@ void Canvas::render(bool backmove,bool cull){
 		return;
 	}
 	renderlist_all->reset();
+	if (z_buffer)
+	{
+		z_buffer->clear();
+	}
 	if(lp_camera->attr == Camera::CAMERA_TYPE_EULER){
 		lp_camera->buildWorldToCameraMatrix_Euler();
 	}else{
 		lp_camera->buildWorldToCameraMatrix_unv(UNV_MODE_SIMPLE);
 	}
 	Object3d *obj;
+	Poly* temp;
+	RenderPoly* renderpoly_temp;
+	Point3d* p1;Point3d* p2;Point3d* p3;
 	for (std::vector<Object3d*>::size_type s = 0;s!=obj_list.size();s++)
 	{
 		obj = obj_list[s];
@@ -247,10 +255,6 @@ void Canvas::render(bool backmove,bool cull){
 		
 		//lightObject(obj);//光照放在这里是因为要在世界空间处理光照，下面的函数如果加一个flag控制要不要偏转顶点法线，也可以换位置(现在有了)
 		transformObject(obj,&(lp_camera->mcam),TRANSFORM_TRANS_ONLY,false,false);
-
-		Poly* temp;
-		RenderPoly* renderpoly_temp;
-		Point3d* p1;Point3d* p2;Point3d* p3;
 		for (i = 0;i<obj->num_polys;i++)
 		{
 			temp = obj->lp_polys + i;
@@ -259,7 +263,7 @@ void Canvas::render(bool backmove,bool cull){
 				renderlist_all->addPoly(temp);
 			}
 		}
-
+	}
 		clipPolyFromRenderlist(renderlist_all,lp_camera,7);
 		lightObject(obj);
 		lp_camera->cameraToPerspective_renderlist(renderlist_all);
@@ -288,7 +292,7 @@ void Canvas::render(bool backmove,bool cull){
 
 			if(!renderpoly_temp->avaliable())continue;
 
-			if (temp->attr&POLY4D_ATTR_SHADE_MODE_LINE)
+			if (renderpoly_temp->attr&POLY4D_ATTR_SHADE_MODE_LINE)
 			{
 				p1 = &(renderpoly_temp->tvlist[0].pos);
 				p2 = &(renderpoly_temp->tvlist[1].pos);
@@ -298,25 +302,34 @@ void Canvas::render(bool backmove,bool cull){
 				drawLine(p3->x,p3->y,p1->x,p1->y,0xff00ffff);
 			}
 			
-			if (temp->attr&POLY4D_ATTR_SHADE_MODE_FLAT)
+			if (renderpoly_temp->attr&POLY4D_ATTR_SHADE_MODE_PURE)
 			{
 				p1 = &(renderpoly_temp->tvlist[0].pos);
 				p2 = &(renderpoly_temp->tvlist[1].pos);
 				p3 = &(renderpoly_temp->tvlist[2].pos);
-				Draw_Triangle_2D(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,temp->lit_color[0].argb,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+				Draw_Triangle_2D(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,renderpoly_temp->color.argb,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
 			}
-			else if (temp->attr&POLY4D_ATTR_SHADE_MODE_GOURAUD)
+
+			if (renderpoly_temp->attr&POLY4D_ATTR_SHADE_MODE_FLAT)
 			{
 				p1 = &(renderpoly_temp->tvlist[0].pos);
 				p2 = &(renderpoly_temp->tvlist[1].pos);
 				p3 = &(renderpoly_temp->tvlist[2].pos);
-				Draw_Gouraud_Triangle(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,temp->lit_color[0],temp->lit_color[1],temp->lit_color[2],lp_canvas->lp_backbuffer,lp_canvas->lpitch);
-			}else if (temp->attr&POLY4D_ATTR_SHADE_MODE_TEXTURE)
+				Draw_Triangle_2D(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,renderpoly_temp->lit_color[0].argb,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+			}
+			else if (renderpoly_temp->attr&POLY4D_ATTR_SHADE_MODE_GOURAUD)
+			{
+				p1 = &(renderpoly_temp->tvlist[0].pos);
+				p2 = &(renderpoly_temp->tvlist[1].pos);
+				p3 = &(renderpoly_temp->tvlist[2].pos);
+				Draw_Gouraud_Triangle(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,renderpoly_temp->lit_color[0],renderpoly_temp->lit_color[1],renderpoly_temp->lit_color[2],lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+			}
+			else if (renderpoly_temp->attr&POLY4D_ATTR_SHADE_MODE_TEXTURE)
 			{
 				drawTextureTriangle(renderpoly_temp,obj->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
 			}
 		}
-	}
+	
 	
 };
 
@@ -547,4 +560,19 @@ Canvas::~Canvas(void)
 	releaseT(lp_directdraw);
 	delete lp_camera;
 	delete renderlist_all;
+};
+
+ZBuffer::ZBuffer(int width,int height,int attr /* = 1 */){
+	buffer = new float[width*height];
+	this->width = width;
+	this->height = height;
+	this->attr = attr;
+};
+
+ZBuffer::~ZBuffer(){
+	delete[] buffer;
+};
+
+void ZBuffer::clear(UINT data){
+	Mem_Set_QUAD(buffer,data,width*height);
 };

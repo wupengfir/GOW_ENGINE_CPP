@@ -1680,3 +1680,125 @@ void clipPolyFromRenderlist(RenderList* rend_list,Camera* cam,int clip_flags){
 
 	} // end for poly
 };
+
+
+void Draw_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z_buffer,int z_pitch){
+	Vertex3d data1;
+	Vertex3d data2;
+	Vertex3d data3;
+	Vertex3d *v1;
+	Vertex3d *v2;
+	Vertex3d *v3;
+	float x1,y1,x2,y2,x3,y3;
+	float z1,z2,z3;
+	UINT* lp_buffer = (UINT*)dest_buffer;
+	UINT* lp_addr = NULL;
+	float* lp_zbuffer = z_buffer;
+	float* lp_zaddr = NULL;
+	int tri_type = TRI_TYPE_NONE;
+	data1.pos = poly->tvlist[0].pos;
+	data2.pos = poly->tvlist[1].pos;
+	data3.pos = poly->tvlist[2].pos;
+	data1.texture_pos =  poly->tvlist[0].texture_pos;
+	data2.texture_pos =  poly->tvlist[1].texture_pos;
+	data3.texture_pos =  poly->tvlist[2].texture_pos;
+	v1 = &data1;
+	v2 = &data2;
+	v3 = &data3;
+	Vertex3d *tv;
+	if(v2->y<v1->y){
+		SWAP(v1,v2,tv); 
+	}
+	if (v3->y<v2->y)
+	{
+		SWAP(v2,v3,tv);
+	}
+	if(v2->y<v1->y){
+		SWAP(v1,v2,tv);
+	}
+	if (FCMP(v2->y,v3->y))
+	{
+		tri_type = TRI_TYPE_BOTTOM;
+		if (v2->x > v3->x)
+		{
+			SWAP(v2,v3,tv);
+		}
+	}
+	if (FCMP(v1->y,v2->y))
+	{
+		tri_type = TRI_TYPE_TOP;
+		if (v1->x > v2->x)
+		{
+			SWAP(v1,v2,tv);
+		}
+	}
+	x1 = v1->x;y1 = v1->y;z1 = v1->z;
+	x2 = v2->x;y2 = v2->y;z2 = v2->z;
+	x3 = v3->x;y3 = v2->y;z3 = v3->z;
+	if (y3<min_clip_y||y1>max_clip_y||
+		(x1<min_clip_x&&x2<min_clip_x&&x3<min_clip_x)||
+		(x1>max_clip_x&&x2>max_clip_x&&x3>max_clip_x))
+	{
+		return;
+	}
+	int iy,loopx,ixs;
+	float dxdyl,dzdyl,dxdyr,dzdyr,dy,xs,xe,dzdx,zs,ze,dx,current_z;
+	switch(tri_type){
+	case TRI_TYPE_BOTTOM:
+		lp_addr = lp_buffer + ((int)y1)*mempitch;
+		lp_zaddr = lp_zbuffer + ((int)y1)*z_pitch;
+		dy = y2-y1;
+		dxdyl = (x2-x1)/dy;
+		dxdyr = (x3-x1)/dy;
+		dzdyl = (z2-z1)/dy;
+		dzdyr = (z3-z1)/dy;
+		xs = x1;
+		xe = x1;
+		zs = z1;
+		ze = z1;
+		ixs = xs;
+		for (iy = (int)y1;iy<=(int)y2;iy++,lp_addr+=mempitch,lp_zaddr+=z_pitch)
+		{
+			dx = xe-xs+1;
+			dzdx = (zs-ze)/dx;
+			for (loopx = 0,loopx<(int)dx;loopx++)
+			{
+				current_z = zs + loopx*dzdx;
+				if (current_z < *(lp_zaddr+ixs+loopx))
+				{
+					Mem_Set_QUAD(lp_addr+ixs+loopx,poly->color,1);
+				}
+			}
+		}
+		break;
+	case TRI_TYPE_TOP:
+		lp_addr = lp_buffer + ((int)y1)*mempitch;
+		lp_zaddr = lp_zbuffer + ((int)y1)*z_pitch;
+		dxdyl = (x3-x1)/(y3-y1);
+		dxdyr = (x3-x2)/(y3-y2);
+		dzdyl = (z3-z1)/(y3-y1);
+		dzdyr = (z3-z2)/(y3-y2);
+		xs = x1;
+		xe = x2;
+		zs = z1;
+		ze = z2;
+		ixs = xs;
+		for (iy = (int)y1;iy<=(int)y3;iy++,lp_addr+=mempitch,lp_zaddr+=z_pitch)
+		{
+			dx = xe-xs+1;
+			dzdx = (zs-ze)/dx;
+			for (loopx = 0,loopx<(int)dx;loopx++)
+			{
+				current_z = zs + loopx*dzdx;
+				if (current_z < *(lp_zaddr+ixs+loopx))
+				{
+					Mem_Set_QUAD(lp_addr+ixs+loopx,poly->color,1);
+				}
+			}
+		}
+		break;
+	case TRI_TYPE_GENERAL:
+
+		break;
+	}
+};
