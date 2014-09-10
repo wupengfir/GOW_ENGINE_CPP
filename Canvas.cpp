@@ -307,7 +307,8 @@ void Canvas::render(bool backmove,bool cull){
 				p1 = &(renderpoly_temp->tvlist[0].pos);
 				p2 = &(renderpoly_temp->tvlist[1].pos);
 				p3 = &(renderpoly_temp->tvlist[2].pos);
-				Draw_Triangle_2D(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,renderpoly_temp->color.argb,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+				Draw_Triangle_zb(renderpoly_temp,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
+				//Draw_Triangle_2D(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,renderpoly_temp->color.argb,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
 			}
 
 			if (renderpoly_temp->attr&POLY4D_ATTR_SHADE_MODE_FLAT)
@@ -573,6 +574,9 @@ ZBuffer::~ZBuffer(){
 	delete[] buffer;
 };
 
-void ZBuffer::clear(UINT data){
-	Mem_Set_QUAD(buffer,data,width*height);
+void ZBuffer::clear(float data){
+	for (int i = 0;i<width*height;i++)
+	{
+		buffer[i] = data;
+	}
 };

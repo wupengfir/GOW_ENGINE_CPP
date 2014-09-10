@@ -18,10 +18,10 @@
 
 #define CLIP_CODE_NULL 0x0000
 
-#define TRI_TYPE_NONE 0;
-#define TRI_TYPE_TOP 1;
-#define TRI_TYPE_BOTTOM 2;
-#define TRI_TYPE_GENERAL 3;
+#define TRI_TYPE_NONE 0
+#define TRI_TYPE_TOP 1
+#define TRI_TYPE_BOTTOM 2
+#define TRI_TYPE_GENERAL 3
 
 
 #include "Common.h"

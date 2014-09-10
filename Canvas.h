@@ -24,7 +24,7 @@ public:
 	int height;
 	float* buffer;
 
-	void clear(UINT data = 0xffffffff);
+	void clear(float data = 10000000.0);
 	ZBuffer(int width,int height,int attr = 1);
 	~ZBuffer(void);
 };

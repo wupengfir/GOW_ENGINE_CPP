@@ -274,11 +274,22 @@ void init_2(){
 	Matrix rotation(44);
 	float m[16] = {1,0,0,0,0,0,-1,0,0,1,0,0,0,0,0,1};
 	rotation.init(m);
-	loadObject_ASC("model/poly1.asc",&p1,&position,&scale,NULL,POLY4D_ATTR_SHADE_MODE_PURE);
+	loadObject_ASC("cube01.asc",&p1,&position,&scale,NULL,POLY4D_ATTR_SHADE_MODE_PURE);
 	p1.lp_polys[0].color.argb = 0xffff0000;
+	p1.lp_polys[1].color.argb = 0xffff0000;
+	p1.lp_polys[2].color.argb = 0xffff0000;
+	p1.lp_polys[3].color.argb = 0xffff0000;
+	p1.lp_polys[4].color.argb = 0xffff0000;
+	p1.lp_polys[5].color.argb = 0xffff0000;
+	p1.lp_polys[6].color.argb = 0xffff0000;
+	p1.lp_polys[7].color.argb = 0xffff0000;
+	p1.lp_polys[8].color.argb = 0xffff0000;
+	p1.lp_polys[9].color.argb = 0xffff0000;
+	p1.lp_polys[10].color.argb = 0xffff0000;
+	p1.lp_polys[11].color.argb = 0xffff0000;
 	position.init(0,220,500);
-	loadObject_ASC("model/poly2.asc",&p2,&position,&scale,NULL,POLY4D_ATTR_SHADE_MODE_PURE);
-	p2.rotationY(60);
+	loadObject_ASC("cube01.asc",&p2,&position,&scale,NULL,POLY4D_ATTR_SHADE_MODE_PURE);
+	p2.rotationY(20);
 	lp_canvas->addObject(&p1);
 	lp_canvas->addObject(&p2);
 };
@@ -295,10 +306,10 @@ void main_loop_2(){
 		p2.world_pos.x -=10; 
 	}
 	if(movefront){
-		p2.world_pos.z +=10;
+		p2.world_pos.z +=3;
 	}
 	if(moveback){
-		p2.world_pos.z -=10;
+		p2.world_pos.z -=3;
 	}
 	if(moveup){
 		p2.world_pos.y +=10;
@@ -312,6 +323,8 @@ void main_loop_2(){
 	if(turnleft){
 		lp_canvas->lp_camera->dir.y -= 0.1;
 	}
+	static int a = 1;
+	//p2.rotationY(a++);
 	static bool lightoff = false;
 	static bool lightable = true;
 	if (KEYDOWN(int('T')))
@@ -327,7 +340,7 @@ void main_loop_2(){
 				lightoff = true;
 			}
 		}
-		lightable = false;		
+		lightable = false; 		
 	}
 	if (KEYUP(int('T')))
 	{
