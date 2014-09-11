@@ -1746,8 +1746,6 @@ void Draw_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z
 	float dxdyl,dzdyl,dxdyr,dzdyr,dy,xs,xe,dzdx,zs,ze,dx,current_z;
 	switch(tri_type){
 	case TRI_TYPE_BOTTOM:
-		lp_addr = lp_buffer + ((int)y1)*mempitch;
-		lp_zaddr = lp_zbuffer + ((int)y1)*z_pitch;
 		dy = y2-y1;
 		dxdyl = (x2-x1)/dy;
 		dxdyr = (x3-x1)/dy;
@@ -1783,18 +1781,20 @@ void Draw_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z
 		{
 			iy3 = ceil(y3) - 1;
 		}
+		lp_addr = lp_buffer + ((int)y1)*mempitch;
+		lp_zaddr = lp_zbuffer + ((int)y1)*z_pitch;
 		if(x1>=min_clip_x&&x1<=max_clip_x&&x2>=min_clip_x&&x2<=max_clip_x&&x3>=min_clip_x&&x3<=max_clip_x){
 			for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch,lp_zaddr+=z_pitch)
 			{
 				dx = xe-xs+1;
-				dzdx = (zs-ze)/dx;
+				dzdx = (ze-zs)/dx;
 				ixs = xs;
 				for (loopx = 0;loopx<(int)dx;loopx++)
 				{
 					current_z = zs + loopx*dzdx;
 					if (current_z < *(lp_zaddr+ixs+loopx))
 					{
-						Mem_Set_QUAD(lp_addr+ixs+loopx,poly->color.argb,1);
+						Mem_Set_QUAD(lp_addr+ixs+loopx,poly->lit_color[0].argb,1);
 						*(lp_zaddr+ixs+loopx) = current_z;
 					}
 				}
@@ -1833,7 +1833,7 @@ void Draw_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z
 					clip_xe = max_clip_x;
 				}
 				dx = clip_xe-clip_xs+1;
-				dzdx = (zs-ze)/dx;
+				dzdx = (ze-zs)/dx;
 				zs += (clip_xs - xs)*dzdx;
 				ixs = xs;
 				for (loopx = 0;loopx<(int)dx;loopx++)
@@ -1841,7 +1841,7 @@ void Draw_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z
 					current_z = zs + loopx*dzdx;
 					if (current_z < *(lp_zaddr+ixs+loopx))
 					{
-						Mem_Set_QUAD(lp_addr+ixs+loopx,poly->color.argb,1);
+						Mem_Set_QUAD(lp_addr+ixs+loopx,poly->lit_color[0].argb,1);
 						*(lp_zaddr+ixs+loopx) = current_z;
 					}
 				}
@@ -1849,8 +1849,6 @@ void Draw_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z
 		}
 		break;
 	case TRI_TYPE_TOP:
-		lp_addr = lp_buffer + ((int)y1)*mempitch;
-		lp_zaddr = lp_zbuffer + ((int)y1)*z_pitch;
 		dxdyl = (x3-x1)/(y3-y1);
 		dxdyr = (x3-x2)/(y3-y2);
 		dzdyl = (z3-z1)/(y3-y1);
@@ -1885,18 +1883,20 @@ void Draw_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z
 		{
 			iy3 = ceil(y3) - 1;
 		}
+		lp_addr = lp_buffer + ((int)y1)*mempitch;
+		lp_zaddr = lp_zbuffer + ((int)y1)*z_pitch;
 		if(x1>=min_clip_x&&x1<=max_clip_x&&x2>=min_clip_x&&x2<=max_clip_x&&x3>=min_clip_x&&x3<=max_clip_x){
 			for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch,lp_zaddr+=z_pitch)
 			{
 				dx = xe-xs+1;
-				dzdx = (zs-ze)/dx;
+				dzdx = (ze-zs)/dx;
 				ixs = xs;
 				for (loopx = 0;loopx<(int)dx;loopx++)
 				{
 					current_z = zs + loopx*dzdx;
 					if (current_z < *(lp_zaddr+ixs+loopx))
 					{
-						Mem_Set_QUAD(lp_addr+ixs+loopx,poly->color.argb,1);
+						Mem_Set_QUAD(lp_addr+ixs+loopx,poly->lit_color[0].argb,1);
 						*(lp_zaddr+ixs+loopx) = current_z;
 					}
 				}
@@ -1935,7 +1935,7 @@ void Draw_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z
 					clip_xe = max_clip_x;
 				}
 				dx = clip_xe-clip_xs+1;
-				dzdx = (zs-ze)/dx;
+				dzdx = (ze-zs)/dx;
 				zs += (clip_xs - xs)*dzdx;
 				ixs = xs;
 				for (loopx = 0;loopx<(int)dx;loopx++)
@@ -1943,7 +1943,7 @@ void Draw_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z
 					current_z = zs + loopx*dzdx;
 					if (current_z < *(lp_zaddr+ixs+loopx))
 					{
-						Mem_Set_QUAD(lp_addr+ixs+loopx,poly->color.argb,1);
+						Mem_Set_QUAD(lp_addr+ixs+loopx,poly->lit_color[0].argb,1);
 						*(lp_zaddr+ixs+loopx) = current_z;
 					}
 				}
@@ -2012,7 +2012,7 @@ void Draw_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z
 					current_z = zs + loopx*dzdx;
 					if (current_z < *(lp_zaddr+ixs+loopx))
 					{
-						Mem_Set_QUAD(lp_addr+ixs+loopx,poly->color.argb,1);
+						Mem_Set_QUAD(lp_addr+ixs+loopx,poly->lit_color[0].argb,1);
 						*(lp_zaddr+ixs+loopx) = current_z;
 					}
 				}
@@ -2059,7 +2059,7 @@ void Draw_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z
 					current_z = zs + loopx*dzdx;
 					if (current_z < *(lp_zaddr+ixs+loopx))
 					{
-						Mem_Set_QUAD(lp_addr+ixs+loopx,poly->color.argb,1);
+						Mem_Set_QUAD(lp_addr+ixs+loopx,poly->lit_color[0].argb,1);
 						*(lp_zaddr+ixs+loopx) = current_z;
 					}
 				}
@@ -2123,7 +2123,7 @@ void Draw_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z
 					current_z = zs + loopx*dzdx;
 					if (current_z < *(lp_zaddr+ixs+loopx))
 					{
-						Mem_Set_QUAD(lp_addr+ixs+loopx,poly->color.argb,1);
+						Mem_Set_QUAD(lp_addr+ixs+loopx,poly->lit_color[0].argb,1);
 						*(lp_zaddr+ixs+loopx) = current_z;
 					}
 				}
@@ -2170,7 +2170,7 @@ void Draw_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z
 					current_z = zs + loopx*dzdx;
 					if (current_z < *(lp_zaddr+ixs+loopx))
 					{
-						Mem_Set_QUAD(lp_addr+ixs+loopx,poly->color.argb,1);
+						Mem_Set_QUAD(lp_addr+ixs+loopx,poly->lit_color[0].argb,1);
 						*(lp_zaddr+ixs+loopx) = current_z;
 					}
 				}
@@ -2178,4 +2178,677 @@ void Draw_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z
 		}
 		break;
 	}
+};
+
+void Draw_Gouraud_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z_buffer,int z_pitch){
+	Vertex3d data1;
+	Vertex3d data2;
+	Vertex3d data3;
+	Vertex3d *v1;
+	Vertex3d *v2;
+	Vertex3d *v3;
+	float x1,y1,x2,y2,x3,y3,temp_value;
+	float z1,z2,z3;
+	Color t_color,color1,color2,color3;
+	mempitch>>=2;
+	UINT* lp_buffer = (UINT*)dest_buffer;
+	UINT* lp_addr = NULL;
+	float* lp_zbuffer = z_buffer;
+	float* lp_zaddr = NULL;
+	int tri_type = TRI_TYPE_GENERAL;
+	data1.pos = poly->tvlist[0].pos;
+	data2.pos = poly->tvlist[1].pos;
+	data3.pos = poly->tvlist[2].pos;
+	data1.texture_pos =  poly->tvlist[0].texture_pos;
+	data2.texture_pos =  poly->tvlist[1].texture_pos;
+	data3.texture_pos =  poly->tvlist[2].texture_pos;
+	v1 = &data1;
+	v2 = &data2;
+	v3 = &data3;
+	Vertex3d *tv;
+	if(v2->y<v1->y){
+		SWAP(v1,v2,tv); 
+		SWAP(poly->lit_color[0],poly->lit_color[1],t_color);
+	}
+	if (v3->y<v2->y)
+	{
+		SWAP(v2,v3,tv);
+		SWAP(poly->lit_color[1],poly->lit_color[2],t_color);
+	}
+	if(v2->y<v1->y){
+		SWAP(v1,v2,tv);
+		SWAP(poly->lit_color[0],poly->lit_color[1],t_color);
+	}
+	if (FCMP(v2->y,v3->y))
+	{
+		tri_type = TRI_TYPE_BOTTOM;
+		if (v2->x > v3->x)
+		{
+			SWAP(v2,v3,tv);
+			SWAP(poly->lit_color[1],poly->lit_color[2],t_color);
+		}
+	}
+	if (FCMP(v1->y,v2->y))
+	{
+		tri_type = TRI_TYPE_TOP;
+		if (v1->x > v2->x)
+		{
+			SWAP(v1,v2,tv);
+			SWAP(poly->lit_color[0],poly->lit_color[1],t_color);
+		}
+	}
+	x1 = v1->x;y1 = v1->y;z1 = v1->z;color1 = poly->lit_color[0];
+	x2 = v2->x;y2 = v2->y;z2 = v2->z;color2 = poly->lit_color[1];
+	x3 = v3->x;y3 = v3->y;z3 = v3->z;color3 = poly->lit_color[2];
+	if (y3<min_clip_y||y1>max_clip_y||
+		(x1<min_clip_x&&x2<min_clip_x&&x3<min_clip_x)||
+		(x1>max_clip_x&&x2>max_clip_x&&x3>max_clip_x))
+	{
+		return;
+	}
+	float dr_left,dg_left,db_left,dr_right,dg_right,db_right;
+	float rs,gs,bs,rd,gd,bd;
+	int iy1,iy3,loopy,loopx;
+	int ixs;
+	float y31,y32,y21;
+	float loopx_dx;
+	UINT final_color;
+	float dxdyl,dzdyl,dxdyr,dzdyr,dy,xs,xe,dzdx,zs,ze,dx,current_z;
+	switch(tri_type){
+	case TRI_TYPE_BOTTOM:
+		y21 = 1/(y2-y1);
+		y31 = 1/(y3-y1);
+		dxdyl = (x2-x1)*y21;
+		dxdyr = (x3-x1)*y31;
+		dzdyl = (z2-z1)*y21;
+		dzdyr = (z3-z1)*y31;
+		dr_left = (color2.r - color1.r)*y21;
+		dg_left = (color2.g - color1.g)*y21;
+		db_left = (color2.b - color1.b)*y21;
+		dr_right = (color3.r - color1.r)*y31;
+		dg_right = (color3.g - color1.g)*y31;
+		db_right = (color3.b - color1.b)*y31;
+		rs = color1.r;gs = color1.g;bs = color1.b;
+		rd = color1.r;gd = color1.g;bd = color1.b;
+		xs = x1;
+		xe = x1;
+		zs = z1;
+		ze = z1;
+		if (y1<=min_clip_y)
+		{
+			xs += (min_clip_y - y1)*dxdyl;
+			xe += (min_clip_y - y1)*dxdyr;
+			zs += (min_clip_y - y1)*dzdyl;
+			ze += (min_clip_y - y1)*dzdyr;
+
+			rs += (min_clip_y - y1)*dr_left;
+			gs += (min_clip_y - y1)*dg_left;
+			bs += (min_clip_y - y1)*db_left;
+			rd += (min_clip_y - y1)*dr_right;
+			gd += (min_clip_y - y1)*dg_right;
+			bd += (min_clip_y - y1)*db_right;
+			y1 = min_clip_y;
+			iy1 = y1;
+		} 
+		else
+		{
+			iy1 = ceil(y1);
+			xs += (iy1 - y1)*dxdyl;
+			xe += (iy1 - y1)*dxdyr;
+			zs += (iy1 - y1)*dzdyl;
+			ze += (iy1 - y1)*dzdyr;
+		}
+		if (y3>=max_clip_y)
+		{
+			y3 = max_clip_y;
+			iy3 = max_clip_y - 1;
+		} 
+		else
+		{
+			iy3 = ceil(y3) - 1;
+		}
+		lp_addr = lp_buffer + ((int)y1)*mempitch;
+		lp_zaddr = lp_zbuffer + ((int)y1)*z_pitch;
+		if(x1>=min_clip_x&&x1<=max_clip_x&&x2>=min_clip_x&&x2<=max_clip_x&&x3>=min_clip_x&&x3<=max_clip_x){
+			for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch,lp_zaddr+=z_pitch)
+			{
+				dx = xe - xs + 1;
+				dzdx = (ze-zs)/dx;
+				ixs = xs;
+				for (loopx = 0;loopx<dx;loopx++)
+				{
+					current_z = zs + loopx*dzdx;
+					if (current_z < *(lp_zaddr+ixs+loopx))
+					{
+						loopx_dx = (loopx/dx);
+						final_color = _RGB32BIT(0xff,(int)(rs + (rd-rs)*loopx_dx),(int)(gs + (gd-gs)*loopx_dx),(int)(bs + (bd-bs)*loopx_dx));
+						Mem_Set_QUAD(lp_addr+ixs+loopx,final_color,1);
+						*(lp_zaddr+ixs+loopx) = current_z;
+					}					
+				}
+				xs += dxdyl;
+				xe += dxdyr;
+				zs += dzdyl;
+				ze += dzdyr;
+				rs += dr_left;
+				gs += dg_left;
+				bs += db_left;
+				rd += dr_right;
+				gd += dg_right;
+				bd += db_right;
+			}
+		}else{
+			float clip_xs,clip_xe,clip_zs,clip_ze;
+
+			for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch,lp_zaddr+=z_pitch)
+			{
+				clip_xe = xe;
+				clip_xs = xs;
+				clip_ze = ze;
+				clip_zs = zs;
+				xs += dxdyl;
+				xe += dxdyr;
+				zs += dzdyl;
+				ze += dzdyr;
+				rs += dr_left;
+				gs += dg_left;
+				bs += db_left;
+				rd += dr_right;
+				gd += dg_right;
+				bd += db_right;
+				if (clip_xe<min_clip_x)
+				{
+					continue;
+				}
+				if (clip_xs>max_clip_x)
+				{
+					continue;
+				}
+				if (clip_xs<min_clip_x)
+				{
+					clip_xs = min_clip_x;
+					rs += (min_clip_x - clip_xs)*dr_left;
+					gs += (min_clip_x - clip_xs)*dg_left;
+					bs += (min_clip_x - clip_xs)*db_left;
+				}
+				if (clip_xe>max_clip_x)
+				{
+					clip_xe = max_clip_x;
+					rd -= (clip_xe - max_clip_x)*dr_right;
+					gd -= (clip_xe - max_clip_x)*dg_right;
+					bd -= (clip_xe - max_clip_x)*db_right;
+				}
+				dx = clip_xe - clip_xs + 1;
+				dzdx = (ze-zs)/dx;
+				zs += (clip_xs - xs)*dzdx;
+				ixs = clip_xs;
+				for (loopx = 0;loopx<(int)dx;loopx++)
+				{
+					current_z = zs + loopx*dzdx;
+					if (current_z < *(lp_zaddr+ixs+loopx))
+					{
+						loopx_dx = (loopx/dx);
+						final_color = _RGB32BIT(0xff,(int)(rs + (rd-rs)*loopx_dx),(int)(gs + (gd-gs)*loopx_dx),(int)(bs + (bd-bs)*loopx_dx));
+						Mem_Set_QUAD(lp_addr+ixs+loopx,final_color,1);
+						*(lp_zaddr+ixs+loopx) = current_z;
+					}					
+				}
+			}		
+		}
+		break;
+	case TRI_TYPE_TOP:
+		y31 = 1/(y3-y1);
+		y32 = 1/(y3-y2);
+		dxdyl = (x3-x1)*y31;
+		dxdyr = (x3-x2)*y32;
+		dzdyl = (z3-z1)*y31;
+		dzdyr = (z3-z2)*y32;
+		dr_left = (color3.r - color1.r)*y31;
+		dg_left = (color3.g - color1.g)*y31;
+		db_left = (color3.b - color1.b)*y31;
+		dr_right = (color3.r - color2.r)*y32;
+		dg_right = (color3.g - color2.g)*y32;
+		db_right = (color3.b - color2.b)*y32;
+		rs = color1.r;gs = color1.g;bs = color1.b;
+		rd = color2.r;gd = color2.g;bd = color2.b;
+		xs = x1;
+		xe = x2;
+		zs = z1;
+		ze = z2;
+		if (y1<=min_clip_y)
+		{
+			xs += (min_clip_y - y1)*dxdyl;
+			xe += (min_clip_y - y1)*dxdyr;
+			zs += (min_clip_y - y1)*dzdyl;
+			ze += (min_clip_y - y1)*dzdyr;
+
+			rs += (min_clip_y - y1)*dr_left;
+			gs += (min_clip_y - y1)*dg_left;
+			bs += (min_clip_y - y1)*db_left;
+			rd += (min_clip_y - y1)*dr_right;
+			gd += (min_clip_y - y1)*dg_right;
+			bd += (min_clip_y - y1)*db_right;
+			y1 = min_clip_y;
+			iy1 = y1;
+		} 
+		else
+		{
+			iy1 = ceil(y1);
+			xs += (iy1 - y1)*dxdyl;
+			xe += (iy1 - y1)*dxdyr;
+			zs += (iy1 - y1)*dzdyl;
+			ze += (iy1 - y1)*dzdyr;
+		}
+		if (y3>=max_clip_y)
+		{
+			y3 = max_clip_y;
+			iy3 = max_clip_y - 1;
+		} 
+		else
+		{
+			iy3 = ceil(y3) - 1;
+		}
+		lp_addr = lp_buffer + ((int)y1)*mempitch;
+		lp_zaddr = lp_zbuffer + ((int)y1)*z_pitch;
+		if(x1>=min_clip_x&&x1<=max_clip_x&&x2>=min_clip_x&&x2<=max_clip_x&&x3>=min_clip_x&&x3<=max_clip_x){
+			for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch,lp_zaddr+=z_pitch)
+			{
+				dx = xe - xs + 1;
+				dzdx = (ze-zs)/dx;
+				ixs = xs;
+				for (loopx = 0;loopx<dx;loopx++)
+				{
+					current_z = zs + loopx*dzdx;
+					if (current_z < *(lp_zaddr+ixs+loopx))
+					{
+						loopx_dx = (loopx/dx);
+						final_color = _RGB32BIT(0xff,(int)(rs + (rd-rs)*loopx_dx),(int)(gs + (gd-gs)*loopx_dx),(int)(bs + (bd-bs)*loopx_dx));
+						Mem_Set_QUAD(lp_addr+ixs+loopx,final_color,1);
+						*(lp_zaddr+ixs+loopx) = current_z;
+					}					
+				}
+				xs += dxdyl;
+				xe += dxdyr;
+				zs += dzdyl;
+				ze += dzdyr;
+				rs += dr_left;
+				gs += dg_left;
+				bs += db_left;
+				rd += dr_right;
+				gd += dg_right;
+				bd += db_right;
+			}
+		}else{
+			float clip_xs,clip_xe,clip_zs,clip_ze;
+
+			for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch,lp_zaddr+=z_pitch)
+			{
+				clip_xe = xe;
+				clip_xs = xs;
+				clip_ze = ze;
+				clip_zs = zs;
+				xs += dxdyl;
+				xe += dxdyr;
+				zs += dzdyl;
+				ze += dzdyr;
+				rs += dr_left;
+				gs += dg_left;
+				bs += db_left;
+				rd += dr_right;
+				gd += dg_right;
+				bd += db_right;
+				if (clip_xe<min_clip_x)
+				{
+					continue;
+				}
+				if (clip_xs>max_clip_x)
+				{
+					continue;
+				}
+				if (clip_xs<min_clip_x)
+				{
+					clip_xs = min_clip_x;
+					rs += (min_clip_x - clip_xs)*dr_left;
+					gs += (min_clip_x - clip_xs)*dg_left;
+					bs += (min_clip_x - clip_xs)*db_left;
+				}
+				if (clip_xe>max_clip_x)
+				{
+					clip_xe = max_clip_x;
+					rd -= (clip_xe - max_clip_x)*dr_right;
+					gd -= (clip_xe - max_clip_x)*dg_right;
+					bd -= (clip_xe - max_clip_x)*db_right;
+				}
+				dx = clip_xe - clip_xs + 1;
+				dzdx = (ze-zs)/dx;
+				zs += (clip_xs - xs)*dzdx;
+				ixs = clip_xs;
+				for (loopx = 0;loopx<(int)dx;loopx++)
+				{
+					current_z = zs + loopx*dzdx;
+					if (current_z < *(lp_zaddr+ixs+loopx))
+					{
+						loopx_dx = (loopx/dx);
+						final_color = _RGB32BIT(0xff,(int)(rs + (rd-rs)*loopx_dx),(int)(gs + (gd-gs)*loopx_dx),(int)(bs + (bd-bs)*loopx_dx));
+						Mem_Set_QUAD(lp_addr+ixs+loopx,final_color,1);
+						*(lp_zaddr+ixs+loopx) = current_z;
+					}					
+				}
+			}		
+		}
+		break;
+	case TRI_TYPE_GENERAL:
+		
+		float temp[12] = {x1,y1,z1,x2,y2,z2,(y2-y1)*(x3-x1)/(y3-y1)+x1,y2,(y2-y1)*(z3-z1)/(y3-y1)+z1,x3,y3,z3};
+		float d = (y3-y2)/(y3-y1);
+		Color t_color;
+		UINT t_argb;
+		t_color.r = color3.r + (color1.r - color3.r)*d;
+		t_color.g = color3.g + (color1.g - color3.g)*d;
+		t_color.b = color3.b + (color1.b - color3.b)*d;
+		Color colors[4] = {color1,color2,t_color,color3};
+		x1 = temp[0];y1 = temp[1];z1 = temp[2];
+		x2 = temp[3];y2 = temp[4];z2 = temp[5];
+		x3 = temp[6];y3 = temp[7];z3 = temp[8];
+		color1.argb = colors[0].argb;color2.argb = colors[1].argb;color3.argb = colors[2].argb;
+		if (x2>x3)
+		{
+			SWAP(x2,x3,temp_value);
+			SWAP(y2,y3,temp_value);
+			SWAP(z2,z3,temp_value);
+			SWAP(color2.argb,color3.argb,t_argb);
+		}
+		y21 = 1/(y2-y1);
+		y31 = 1/(y3-y1);
+		dxdyl = (x2-x1)*y21;
+		dxdyr = (x3-x1)*y31;
+		dzdyl = (z2-z1)*y21;
+		dzdyr = (z3-z1)*y31;
+		dr_left = (color2.r - color1.r)*y21;
+		dg_left = (color2.g - color1.g)*y21;
+		db_left = (color2.b - color1.b)*y21;
+		dr_right = (color3.r - color1.r)*y31;
+		dg_right = (color3.g - color1.g)*y31;
+		db_right = (color3.b - color1.b)*y31;
+		rs = color1.r;gs = color1.g;bs = color1.b;
+		rd = color1.r;gd = color1.g;bd = color1.b;
+		xs = x1;
+		xe = x1;
+		zs = z1;
+		ze = z1;
+		if (y1<=min_clip_y)
+		{
+			xs += (min_clip_y - y1)*dxdyl;
+			xe += (min_clip_y - y1)*dxdyr;
+			zs += (min_clip_y - y1)*dzdyl;
+			ze += (min_clip_y - y1)*dzdyr;
+
+			rs += (min_clip_y - y1)*dr_left;
+			gs += (min_clip_y - y1)*dg_left;
+			bs += (min_clip_y - y1)*db_left;
+			rd += (min_clip_y - y1)*dr_right;
+			gd += (min_clip_y - y1)*dg_right;
+			bd += (min_clip_y - y1)*db_right;
+			y1 = min_clip_y;
+			iy1 = y1;
+		} 
+		else
+		{
+			iy1 = ceil(y1);
+			xs += (iy1 - y1)*dxdyl;
+			xe += (iy1 - y1)*dxdyr;
+			zs += (iy1 - y1)*dzdyl;
+			ze += (iy1 - y1)*dzdyr;
+		}
+		if (y3>=max_clip_y)
+		{
+			y3 = max_clip_y;
+			iy3 = max_clip_y - 1;
+		} 
+		else
+		{
+			iy3 = ceil(y3) - 1;
+		}
+		lp_addr = lp_buffer + ((int)y1)*mempitch;
+		lp_zaddr = lp_zbuffer + ((int)y1)*z_pitch;
+		if(x1>=min_clip_x&&x1<=max_clip_x&&x2>=min_clip_x&&x2<=max_clip_x&&x3>=min_clip_x&&x3<=max_clip_x){
+			for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch,lp_zaddr+=z_pitch)
+			{
+				dx = xe - xs + 1;
+				dzdx = (ze-zs)/dx;
+				ixs = xs;
+				for (loopx = 0;loopx<dx;loopx++)
+				{
+					current_z = zs + loopx*dzdx;
+					if (current_z < *(lp_zaddr+ixs+loopx))
+					{
+						loopx_dx = (loopx/dx);
+						final_color = _RGB32BIT(0xff,(int)(rs + (rd-rs)*loopx_dx),(int)(gs + (gd-gs)*loopx_dx),(int)(bs + (bd-bs)*loopx_dx));
+						Mem_Set_QUAD(lp_addr+ixs+loopx,final_color,1);
+						*(lp_zaddr+ixs+loopx) = current_z;
+					}					
+				}
+				xs += dxdyl;
+				xe += dxdyr;
+				zs += dzdyl;
+				ze += dzdyr;
+				rs += dr_left;
+				gs += dg_left;
+				bs += db_left;
+				rd += dr_right;
+				gd += dg_right;
+				bd += db_right;
+			}
+		}else{
+			float clip_xs,clip_xe,clip_zs,clip_ze;
+
+			for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch,lp_zaddr+=z_pitch)
+			{
+				clip_xe = xe;
+				clip_xs = xs;
+				clip_ze = ze;
+				clip_zs = zs;
+				xs += dxdyl;
+				xe += dxdyr;
+				zs += dzdyl;
+				ze += dzdyr;
+				rs += dr_left;
+				gs += dg_left;
+				bs += db_left;
+				rd += dr_right;
+				gd += dg_right;
+				bd += db_right;
+				if (clip_xe<min_clip_x)
+				{
+					continue;
+				}
+				if (clip_xs>max_clip_x)
+				{
+					continue;
+				}
+				if (clip_xs<min_clip_x)
+				{
+					clip_xs = min_clip_x;
+					rs += (min_clip_x - clip_xs)*dr_left;
+					gs += (min_clip_x - clip_xs)*dg_left;
+					bs += (min_clip_x - clip_xs)*db_left;
+				}
+				if (clip_xe>max_clip_x)
+				{
+					clip_xe = max_clip_x;
+					rd -= (clip_xe - max_clip_x)*dr_right;
+					gd -= (clip_xe - max_clip_x)*dg_right;
+					bd -= (clip_xe - max_clip_x)*db_right;
+				}
+				dx = clip_xe - clip_xs + 1;
+				dzdx = (ze-zs)/dx;
+				zs += (clip_xs - xs)*dzdx;
+				ixs = clip_xs;
+				for (loopx = 0;loopx<(int)dx;loopx++)
+				{
+					current_z = zs + loopx*dzdx;
+					if (current_z < *(lp_zaddr+ixs+loopx))
+					{
+						loopx_dx = (loopx/dx);
+						final_color = _RGB32BIT(0xff,(int)(rs + (rd-rs)*loopx_dx),(int)(gs + (gd-gs)*loopx_dx),(int)(bs + (bd-bs)*loopx_dx));
+						Mem_Set_QUAD(lp_addr+ixs+loopx,final_color,1);
+						*(lp_zaddr+ixs+loopx) = current_z;
+					}					
+				}
+			}		
+		}
+		x1 = temp[3];y1 = temp[4];z1 = temp[5];
+		x2 = temp[6];y2 = temp[7];z2 = temp[8];
+		x3 = temp[9];y3 = temp[10];z3 = temp[11];
+		color1.argb = colors[1].argb;color2.argb = colors[2].argb;color3.argb = colors[3].argb;
+		if (x1>x2)
+		{
+			SWAP(x2,x1,temp_value);
+			SWAP(y2,y1,temp_value);
+			SWAP(z2,z1,temp_value);
+			SWAP(color2.argb,color1.argb,t_argb);
+		}
+		y31 = 1/(y3-y1);
+		y32 = 1/(y3-y2);
+		dxdyl = (x3-x1)*y31;
+		dxdyr = (x3-x2)*y32;
+		dzdyl = (z3-z1)*y31;
+		dzdyr = (z3-z2)*y32;
+		dr_left = (color3.r - color1.r)*y31;
+		dg_left = (color3.g - color1.g)*y31;
+		db_left = (color3.b - color1.b)*y31;
+		dr_right = (color3.r - color2.r)*y32;
+		dg_right = (color3.g - color2.g)*y32;
+		db_right = (color3.b - color2.b)*y32;
+		rs = color1.r;gs = color1.g;bs = color1.b;
+		rd = color2.r;gd = color2.g;bd = color2.b;
+		xs = x1;
+		xe = x2;
+		zs = z1;
+		ze = z2;
+		if (y1<=min_clip_y)
+		{
+			xs += (min_clip_y - y1)*dxdyl;
+			xe += (min_clip_y - y1)*dxdyr;
+			zs += (min_clip_y - y1)*dzdyl;
+			ze += (min_clip_y - y1)*dzdyr;
+
+			rs += (min_clip_y - y1)*dr_left;
+			gs += (min_clip_y - y1)*dg_left;
+			bs += (min_clip_y - y1)*db_left;
+			rd += (min_clip_y - y1)*dr_right;
+			gd += (min_clip_y - y1)*dg_right;
+			bd += (min_clip_y - y1)*db_right;
+			y1 = min_clip_y;
+			iy1 = y1;
+		} 
+		else
+		{
+			iy1 = ceil(y1);
+			xs += (iy1 - y1)*dxdyl;
+			xe += (iy1 - y1)*dxdyr;
+			zs += (iy1 - y1)*dzdyl;
+			ze += (iy1 - y1)*dzdyr;
+		}
+		if (y3>=max_clip_y)
+		{
+			y3 = max_clip_y;
+			iy3 = max_clip_y - 1;
+		} 
+		else
+		{
+			iy3 = ceil(y3) - 1;
+		}
+		if(x1>=min_clip_x&&x1<=max_clip_x&&x2>=min_clip_x&&x2<=max_clip_x&&x3>=min_clip_x&&x3<=max_clip_x){
+			for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch,lp_zaddr+=z_pitch)
+			{
+				dx = xe - xs + 1;
+				dzdx = (ze-zs)/dx;
+				ixs = xs;
+				for (loopx = 0;loopx<dx;loopx++)
+				{
+					current_z = zs + loopx*dzdx;
+					if (current_z < *(lp_zaddr+ixs+loopx))
+					{
+						loopx_dx = (loopx/dx);
+						final_color = _RGB32BIT(0xff,(int)(rs + (rd-rs)*loopx_dx),(int)(gs + (gd-gs)*loopx_dx),(int)(bs + (bd-bs)*loopx_dx));
+						Mem_Set_QUAD(lp_addr+ixs+loopx,final_color,1);
+						*(lp_zaddr+ixs+loopx) = current_z;
+					}					
+				}
+				xs += dxdyl;
+				xe += dxdyr;
+				zs += dzdyl;
+				ze += dzdyr;
+				rs += dr_left;
+				gs += dg_left;
+				bs += db_left;
+				rd += dr_right;
+				gd += dg_right;
+				bd += db_right;
+			}
+		}else{
+			float clip_xs,clip_xe,clip_zs,clip_ze;
+
+			for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch,lp_zaddr+=z_pitch)
+			{
+				clip_xe = xe;
+				clip_xs = xs;
+				clip_ze = ze;
+				clip_zs = zs;
+				xs += dxdyl;
+				xe += dxdyr;
+				zs += dzdyl;
+				ze += dzdyr;
+				rs += dr_left;
+				gs += dg_left;
+				bs += db_left;
+				rd += dr_right;
+				gd += dg_right;
+				bd += db_right;
+				if (clip_xe<min_clip_x)
+				{
+					continue;
+				}
+				if (clip_xs>max_clip_x)
+				{
+					continue;
+				}
+				if (clip_xs<min_clip_x)
+				{
+					clip_xs = min_clip_x;
+					rs += (min_clip_x - clip_xs)*dr_left;
+					gs += (min_clip_x - clip_xs)*dg_left;
+					bs += (min_clip_x - clip_xs)*db_left;
+				}
+				if (clip_xe>max_clip_x)
+				{
+					clip_xe = max_clip_x;
+					rd -= (clip_xe - max_clip_x)*dr_right;
+					gd -= (clip_xe - max_clip_x)*dg_right;
+					bd -= (clip_xe - max_clip_x)*db_right;
+				}
+				dx = clip_xe - clip_xs + 1;
+				dzdx = (ze-zs)/dx;
+				zs += (clip_xs - xs)*dzdx;
+				ixs = clip_xs;
+				for (loopx = 0;loopx<(int)dx;loopx++)
+				{
+					current_z = zs + loopx*dzdx;
+					if (current_z < *(lp_zaddr+ixs+loopx))
+					{
+						loopx_dx = (loopx/dx);
+						final_color = _RGB32BIT(0xff,(int)(rs + (rd-rs)*loopx_dx),(int)(gs + (gd-gs)*loopx_dx),(int)(bs + (bd-bs)*loopx_dx));
+						Mem_Set_QUAD(lp_addr+ixs+loopx,final_color,1);
+						*(lp_zaddr+ixs+loopx) = current_z;
+					}					
+				}
+			}		
+		}
+		break;
+	}
+};
+
+void drawTextureTriangle_zb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_buffer, int mempitch,float* z_buffer,int z_pitch){
+	 
 };

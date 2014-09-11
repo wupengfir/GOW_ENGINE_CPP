@@ -274,7 +274,7 @@ void init_2(){
 	Matrix rotation(44);
 	float m[16] = {1,0,0,0,0,0,-1,0,0,1,0,0,0,0,0,1};
 	rotation.init(m);
-	loadObject_ASC("cube01.asc",&p1,&position,&scale,NULL,POLY4D_ATTR_SHADE_MODE_PURE);
+	loadObject_ASC("cube01.asc",&p1,&position,&scale,NULL,POLY4D_ATTR_SHADE_MODE_GOURAUD);
 	p1.lp_polys[0].color.argb = 0xffff0000;
 	p1.lp_polys[1].color.argb = 0xffff0000;
 	p1.lp_polys[2].color.argb = 0xffff0000;
@@ -288,7 +288,7 @@ void init_2(){
 	p1.lp_polys[10].color.argb = 0xffff0000;
 	p1.lp_polys[11].color.argb = 0xffff0000;
 	position.init(0,220,500);
-	loadObject_ASC("cube01.asc",&p2,&position,&scale,NULL,POLY4D_ATTR_SHADE_MODE_PURE);
+	loadObject_ASC("cube01.asc",&p2,&position,&scale,NULL,POLY4D_ATTR_SHADE_MODE_FLAT);
 	p2.rotationY(20);
 	lp_canvas->addObject(&p1);
 	lp_canvas->addObject(&p2);

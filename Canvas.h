@@ -80,6 +80,7 @@ public:
 	void addObject(Object3d* obj);
 	void addRenderList(RenderList* list);
 	void lightObject(Object3d* obj);
+	void lightRenderlist(RenderList* list);
 	void render(bool backmove = true,bool cull = true);
 
 	inline void addLight(Light* light){
