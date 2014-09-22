@@ -329,7 +329,8 @@ void Canvas::render(bool backmove,bool cull){
 			}
 			else if (renderpoly_temp->attr&POLY4D_ATTR_SHADE_MODE_TEXTURE)
 			{
-				drawTextureTriangle(renderpoly_temp,obj->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+				drawTextureTriangle_zb(renderpoly_temp,obj->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
+				//drawTextureTriangle(renderpoly_temp,obj->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
 			}
 		}
 	

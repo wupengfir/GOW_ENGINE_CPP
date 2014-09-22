@@ -288,7 +288,11 @@ void init_2(){
 	p1.lp_polys[10].color.argb = 0xffff0000;
 	p1.lp_polys[11].color.argb = 0xffff0000;
 	position.init(0,220,500);
-	loadObject_ASC("cube01.asc",&p2,&position,&scale,NULL,POLY4D_ATTR_SHADE_MODE_FLAT);
+	loadObject_COB("cube_flat_textured_01.cob",&p2,&position,&scale,NULL,POLY4D_ATTR_SHADE_MODE_TEXTURE,true);
+	BitmapData* texture = new BitmapData();
+	loadBitmapImage(texture,"img/123.bmp");
+	p2.texture = texture;
+	//loadObject_ASC("cube01.asc",&p2,&position,&scale,NULL,POLY4D_ATTR_SHADE_MODE_FLAT);
 	p2.rotationY(20);
 	lp_canvas->addObject(&p1);
 	lp_canvas->addObject(&p2);

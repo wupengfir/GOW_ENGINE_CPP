@@ -125,7 +125,7 @@ int second = 0;
 int Game_Main(void *parms = NULL, int num_parms = 0)
 {
 	int current_clock = timeGetTime();
-	if ((current_clock - start_clock) < 33)
+	if ((current_clock - start_clock) < 30) 
 	{
 		return 1;
 	}
