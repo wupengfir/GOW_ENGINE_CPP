@@ -481,7 +481,7 @@ void loadTerrain(Object3d* obj,int width,int length,int max_height,char* height_
 		float dtx = 1/(float)(height_data.width -1);
 		float dty = 1/(float)(height_data.height -1);
 		loadBitmapImage(texture_data,texture_path);
-		obj->texture = texture_data;
+		obj->setTexture(texture_data);
 		obj->lp_texture_position_list = new Point2d[(height_data.width - 1)*(height_data.height - 1)*2*3];
 		current_width = height_data.height - 1;
 		for (int i = 0;i<current_width;i++)

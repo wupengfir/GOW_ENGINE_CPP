@@ -300,6 +300,7 @@ void Canvas::render(bool backmove,bool cull){
 				drawLine(p1->x,p1->y,p2->x,p2->y,0xff00ffff);
 				drawLine(p2->x,p2->y,p3->x,p3->y,0xff00ffff);
 				drawLine(p3->x,p3->y,p1->x,p1->y,0xff00ffff);
+				continue;
 			}
 			
 			if (renderpoly_temp->attr&POLY4D_ATTR_SHADE_MODE_PURE)
@@ -309,6 +310,7 @@ void Canvas::render(bool backmove,bool cull){
 				p3 = &(renderpoly_temp->tvlist[2].pos);
 				Draw_Triangle_zb(renderpoly_temp,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
 				//Draw_Triangle_2D(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,renderpoly_temp->color.argb,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+				continue;
 			}
 
 			if (renderpoly_temp->attr&POLY4D_ATTR_SHADE_MODE_FLAT)
@@ -316,25 +318,36 @@ void Canvas::render(bool backmove,bool cull){
 				p1 = &(renderpoly_temp->tvlist[0].pos);
 				p2 = &(renderpoly_temp->tvlist[1].pos);
 				p3 = &(renderpoly_temp->tvlist[2].pos);
-				Draw_Triangle_zb(renderpoly_temp,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
-				//Draw_Triangle_2D(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,renderpoly_temp->lit_color[0].argb,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+				if(renderpoly_temp->attr&POLY4D_ATTR_SHADE_MODE_TEXTURE){
+					drawTextureTriangle_zb(renderpoly_temp,renderpoly_temp->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
+				}else{
+					Draw_Triangle_zb(renderpoly_temp,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
+					//Draw_Triangle_2D(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,renderpoly_temp->lit_color[0].argb,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+				}				
+				continue;
 			}
 			else if (renderpoly_temp->attr&POLY4D_ATTR_SHADE_MODE_GOURAUD)
 			{
 				p1 = &(renderpoly_temp->tvlist[0].pos);
 				p2 = &(renderpoly_temp->tvlist[1].pos);
-				p3 = &(renderpoly_temp->tvlist[2].pos);
-				Draw_Gouraud_Triangle_zb(renderpoly_temp,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
-				//Draw_Gouraud_Triangle(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,renderpoly_temp->lit_color[0],renderpoly_temp->lit_color[1],renderpoly_temp->lit_color[2],lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+				p3 = &(renderpoly_temp->tvlist[2].pos);				
+				if(renderpoly_temp->attr&POLY4D_ATTR_SHADE_MODE_TEXTURE){
+					drawTextureTriangle_zb_gouraud(renderpoly_temp,renderpoly_temp->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
+				}else{
+					Draw_Gouraud_Triangle_zb(renderpoly_temp,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
+					//Draw_Gouraud_Triangle(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,renderpoly_temp->lit_color[0],renderpoly_temp->lit_color[1],renderpoly_temp->lit_color[2],lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+				}				
+				continue;
 			}
 			else if (renderpoly_temp->attr&POLY4D_ATTR_SHADE_MODE_TEXTURE)
 			{
-				drawTextureTriangle_zb(renderpoly_temp,obj->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
-				//drawTextureTriangle(renderpoly_temp,obj->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+				drawTextureTriangle_zb(renderpoly_temp,renderpoly_temp->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
+				//drawTextureTriangle(renderpoly_temp,renderpoly_temp->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+				continue;
 			}
 		}
-	
-	
+
+
 };
 
 void Canvas::lightRenderlist(RenderList* list){
@@ -358,7 +371,7 @@ void Canvas::lightRenderlist(RenderList* list){
 				lp_poly->lit_color[0].argb = lp_poly->color.argb;
 				continue;
 			}
-			else if (lp_poly->attr&POLY4D_ATTR_SHADE_MODE_FLAT||lp_poly->attr&POLY4D_ATTR_SHADE_MODE_TEXTURE)
+			else if (lp_poly->attr&POLY4D_ATTR_SHADE_MODE_FLAT)
 			{
 				for (std::vector<Light*>::size_type i = 0;i!=LightList.size();i++)
 				{
@@ -528,7 +541,7 @@ void Canvas::lightObject(Object3d* obj){
 				lp_poly->lit_color[0].argb = lp_poly->color.argb;
 				continue;
 			}
-			else if (lp_poly->attr&POLY4D_ATTR_SHADE_MODE_FLAT||lp_poly->attr&POLY4D_ATTR_SHADE_MODE_TEXTURE)
+			else if (lp_poly->attr&POLY4D_ATTR_SHADE_MODE_FLAT)
 			{
 				for (std::vector<Light*>::size_type i = 0;i!=LightList.size();i++)
 				{

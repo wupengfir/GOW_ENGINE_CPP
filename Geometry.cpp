@@ -241,3 +241,11 @@ void Point3d::build(Point3d* target,Vector3d* storage){
 	storage->y = target->y - y;
 	storage->z = target->z - z;
 };
+
+void Object3d::setTexture(BitmapData* data){
+	texture = data;
+	for (int i = 0;i<num_polys;i++)
+	{
+		lp_polys[i].texture = data;
+	}
+}

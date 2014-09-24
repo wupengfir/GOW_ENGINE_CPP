@@ -54,3 +54,4 @@ void clipPolyFromRenderlist(RenderList* render_list,Camera* cam,int mode);
 void Draw_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z_buffer,int z_pitch);
 void Draw_Gouraud_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z_buffer,int z_pitch);
 void drawTextureTriangle_zb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_buffer, int mempitch,float* z_buffer,int z_pitch);
+void drawTextureTriangle_zb_gouraud(RenderPoly *poly,BitmapData *texture,UCHAR *dest_buffer, int mempitch,float* z_buffer,int z_pitch);

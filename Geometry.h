@@ -390,6 +390,7 @@ public:
 	void scale(float x,float y,float z);	
 	int setFrame(int frame);
 	void init(int num_v,int num_p,int num_f);
+	void setTexture(BitmapData* data);
 
 	inline void toWorldPosition(int type){
 		if (type == TRANSFORM_LOCAL_TO_TRANS)
@@ -489,6 +490,7 @@ public:
 		polys[num_polys].normal_length = poly->normal_length;
 		polys[num_polys].normal_vector = poly->normal_vector;
 		polys[num_polys].avg_z = poly->avg_z;
+		polys[num_polys].texture = poly->texture;
 		polys[num_polys].lit_color[0] = poly->lit_color[0];
 		polys[num_polys].lit_color[1] = poly->lit_color[1];
 		polys[num_polys].lit_color[2] = poly->lit_color[2];
@@ -498,6 +500,7 @@ public:
 		polys[num_polys].tvlist[0].texture_pos = poly->lp_texture_position_object[poly->t_index_list[0]];
 		polys[num_polys].tvlist[1].texture_pos = poly->lp_texture_position_object[poly->t_index_list[1]];
 		polys[num_polys].tvlist[2].texture_pos = poly->lp_texture_position_object[poly->t_index_list[2]];
+
 		lp_polys[num_polys] = &polys[num_polys];
 		num_polys++;
 	}
