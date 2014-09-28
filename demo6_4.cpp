@@ -142,7 +142,7 @@ int Game_Main(void *parms = NULL, int num_parms = 0)
 		return 1;
 	}
 	checkKey();
-	main_loop_2();
+	main_loop_1();
 
 	//¼ÆËãÖ¡Êı
 	if ((timeGetTime() - second)<1000)

@@ -144,6 +144,7 @@ Matrix::~Matrix(){
 
 Object3d::Object3d(){
 	state = OBJECT_STATE_ACTIVE|OBJECT_STATE_VISIBLE;
+	lp_texture_position_list = NULL;
 };
 
 void Object3d::rotationY(float deg){

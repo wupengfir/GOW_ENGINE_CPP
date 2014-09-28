@@ -195,6 +195,13 @@ public:
 		w = source->w;
 	}
 
+	Vector3d(){
+		x = 0;
+		y = 0;
+		z = 0;
+		w = 1;
+	};
+
 };
 
 class Vertex3d{
@@ -220,7 +227,6 @@ public:
 		normal = v->normal;
 		texture_pos = v->texture_pos;
 	};
-
 };
 
 class Poly{
@@ -247,6 +253,8 @@ public:
 	Poly(){
 		state = POLY4D_STATE_ACTIVE;
 		attr = 0;
+		lp_texture_position_object = NULL;
+		lp_vertex_object = NULL;
 	}
 
 	inline bool avaliable(){
@@ -497,10 +505,12 @@ public:
 		polys[num_polys].tvlist[0].copy(poly->lp_vertex_object + poly->v_index_list[0]);
 		polys[num_polys].tvlist[1].copy(poly->lp_vertex_object + poly->v_index_list[1]);
 		polys[num_polys].tvlist[2].copy(poly->lp_vertex_object + poly->v_index_list[2]);
-		polys[num_polys].tvlist[0].texture_pos = poly->lp_texture_position_object[poly->t_index_list[0]];
-		polys[num_polys].tvlist[1].texture_pos = poly->lp_texture_position_object[poly->t_index_list[1]];
-		polys[num_polys].tvlist[2].texture_pos = poly->lp_texture_position_object[poly->t_index_list[2]];
-
+		if (poly->lp_texture_position_object)
+		{
+			polys[num_polys].tvlist[0].texture_pos = poly->lp_texture_position_object[poly->t_index_list[0]];
+			polys[num_polys].tvlist[1].texture_pos = poly->lp_texture_position_object[poly->t_index_list[1]];
+			polys[num_polys].tvlist[2].texture_pos = poly->lp_texture_position_object[poly->t_index_list[2]];
+		}
 		lp_polys[num_polys] = &polys[num_polys];
 		num_polys++;
 	}

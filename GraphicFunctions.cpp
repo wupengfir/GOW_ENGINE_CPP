@@ -1,4 +1,15 @@
 #include "GraphicFunctions.h"
+#define CLIP_CODE_C  0x0000
+#define CLIP_CODE_N  0x0008
+#define CLIP_CODE_S  0x0004
+#define CLIP_CODE_E  0x0002
+#define CLIP_CODE_W  0x0001
+
+#define CLIP_CODE_NE 0x000a
+#define CLIP_CODE_SE 0x0006
+#define CLIP_CODE_NW 0x0009 
+#define CLIP_CODE_SW 0x0005
+
 
 int Draw_Text_GDI(char *text, int x,int y,COLORREF color)
 {
@@ -39,30 +50,30 @@ int drawLine(int x0, int y0, int x1, int y1, UINT color)
 	dx = x1 - x0;
 	dy = y1 - y0;
 
-	if (dx >= 0) // 从左往右画
+	if (dx >= 0) 
 	{
-		xstep = 1; // x步进正1
+		xstep = 1; 
 	}
-	else // 从右往左画
+	else
 	{
-		xstep = -1; // x步进负1
-		dx = -dx; // 取绝对值
+		xstep = -1;
+		dx = -dx;
 	}
 
-	if (dy >= 0) // 从上往下画
+	if (dy >= 0)
 	{
-		ystep = 1; // y步进正1
+		ystep = 1;
 	}
-	else // 从下往上画
+	else 
 	{ 
-		ystep = -1; // y步进负1
-		dy = -dy; // 取绝对值
+		ystep = -1;
+		dy = -dy;
 	}
 
 	dx2 = dx << 1; // 2 * dx
 	dy2 = dy << 1; // 2 * dy
 
-	if (dx > dy) // 近X轴直线
+	if (dx > dy)
 	{
 		error = dy2 - dx;
 		for (index = 0; index <= dx; ++index)
@@ -77,7 +88,7 @@ int drawLine(int x0, int y0, int x1, int y1, UINT color)
 			x += xstep;
 		}
 	}
-	else // 近Y轴直线
+	else
 	{
 		error = dx2 - dy;
 		for (index = 0; index <= dy; ++index)
@@ -102,17 +113,6 @@ int Clip_Line(int &x1,int &y1,int &x2, int &y2)
 	// region
 
 	// internal clipping codes
-#define CLIP_CODE_C  0x0000
-#define CLIP_CODE_N  0x0008
-#define CLIP_CODE_S  0x0004
-#define CLIP_CODE_E  0x0002
-#define CLIP_CODE_W  0x0001
-
-#define CLIP_CODE_NE 0x000a
-#define CLIP_CODE_SE 0x0006
-#define CLIP_CODE_NW 0x0009 
-#define CLIP_CODE_SW 0x0005
-
 	int xc1=x1, 
 		yc1=y1, 
 		xc2=x2, 
@@ -362,7 +362,7 @@ int Clip_Line(int &x1,int &y1,int &x2, int &y2)
 
 	return(1);
 
-} 
+};
 
 void Draw_Triangle_2D(float x1,float y1, float x2,float y2, float x3,float y3, int color, UCHAR *dest_buffer, int mempitch){
 	if ((FCMP(x1,x2)&&FCMP(x2,x3))||(FCMP(y1,y2)&&FCMP(y2,y3)))
@@ -1848,10 +1848,13 @@ void Draw_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z
 				{
 					clip_xe = max_clip_x;
 				}
-				dx = clip_xe-clip_xs+1;
+				/*dx = xe-xs+1;
 				dzdx = (ze-zs)/dx;
+				zs += (clip_xs - xs)*dzdx;*/
+				dx = clip_xe-clip_xs+1;
+				dzdx = (ze-zs)/(xe-xs+1);
 				zs += (clip_xs - xs)*dzdx;
-				ixs = xs;
+				ixs = clip_xs;
 				for (loopx = 0;loopx<(int)dx;loopx++)
 				{
 					current_z = zs + loopx*dzdx;
@@ -1950,10 +1953,13 @@ void Draw_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z
 				{
 					clip_xe = max_clip_x;
 				}
-				dx = clip_xe-clip_xs+1;
+				/*dx = xe-xs+1;
 				dzdx = (ze-zs)/dx;
+				zs += (clip_xs - xs)*dzdx;*/
+				dx = clip_xe-clip_xs+1;
+				dzdx = (ze-zs)/(xe-xs+1);
 				zs += (clip_xs - xs)*dzdx;
-				ixs = xs;
+				ixs = clip_xs;
 				for (loopx = 0;loopx<(int)dx;loopx++)
 				{
 					current_z = zs + loopx*dzdx;
@@ -2067,8 +2073,8 @@ void Draw_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z
 					clip_xe = max_clip_x;
 				}
 				dx = clip_xe-clip_xs+1;
-				dzdx = (ze-zs)/dx;
-				zs += (clip_xe - xs)*dzdx;
+				dzdx = (ze-zs)/(xe-xs+1);
+				zs += (clip_xs - xs)*dzdx;
 				ixs = clip_xs;
 				for (loopx = 0;loopx<(int)dx;loopx++)
 				{
@@ -2177,8 +2183,11 @@ void Draw_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z
 				{
 					clip_xe = max_clip_x;
 				}
-				dx = clip_xe-clip_xs+1;
+				/*dx = xe-xs+1;
 				dzdx = (ze-zs)/dx;
+				zs += (clip_xs - xs)*dzdx;*/
+				dx = clip_xe-clip_xs+1;
+				dzdx = (ze-zs)/(xe-xs+1);
 				zs += (clip_xs - xs)*dzdx;
 				ixs = clip_xs;
 				for (loopx = 0;loopx<(int)dx;loopx++)
@@ -2405,7 +2414,7 @@ void Draw_Gouraud_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,
 					
 				}
 				dx = clip_xe - clip_xs + 1;
-				dzdx = (ze-zs)/dx;
+				dzdx = (ze-zs)/(xe-xs+1);
 				zs += (clip_xs - xs)*dzdx;
 				ixs = clip_xs;
 				for (loopx = 0;loopx<(int)dx;loopx++)
@@ -2555,7 +2564,7 @@ void Draw_Gouraud_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,
 					
 				}
 				dx = clip_xe - clip_xs + 1;
-				dzdx = (ze-zs)/dx;
+				dzdx = (ze-zs)/(xe-xs+1);
 				zs += (clip_xs - xs)*dzdx;
 				ixs = clip_xs;
 				for (loopx = 0;loopx<(int)dx;loopx++)
@@ -2725,7 +2734,7 @@ void Draw_Gouraud_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,
 					
 				}
 				dx = clip_xe - clip_xs + 1;
-				dzdx = (ze-zs)/dx;
+				dzdx = (ze-zs)/(xe-xs+1);
 				zs += (clip_xs - xs)*dzdx;
 				ixs = clip_xs;
 				for (loopx = 0;loopx<(int)dx;loopx++)
@@ -2881,7 +2890,7 @@ void Draw_Gouraud_Triangle_zb(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,
 					clip_xe = max_clip_x;					
 				}
 				dx = clip_xe - clip_xs + 1;
-				dzdx = (ze-zs)/dx;
+				dzdx = (ze-zs)/(xe-xs+1);
 				zs += (clip_xs - xs)*dzdx;
 				ixs = clip_xs;
 				for (loopx = 0;loopx<(int)dx;loopx++)
@@ -2943,7 +2952,7 @@ void drawTextureTriangle_zb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_buf
 		if (v2->x > v3->x)
 		{
 			SWAP(v2,v3,tv);
-			SWAP(poly->lit_color[1],poly->lit_color[2],t_color);
+			//SWAP(poly->lit_color[1],poly->lit_color[2],t_color);
 		}
 	}
 	if (FCMP(v1->y,v2->y))
@@ -2952,7 +2961,7 @@ void drawTextureTriangle_zb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_buf
 		if (v1->x > v2->x)
 		{
 			SWAP(v1,v2,tv);
-			SWAP(poly->lit_color[0],poly->lit_color[1],t_color);
+			//SWAP(poly->lit_color[0],poly->lit_color[1],t_color);
 		}
 	}
 	x1 = v1->x;y1 = v1->y;z1 = v1->z;
@@ -3113,7 +3122,7 @@ void drawTextureTriangle_zb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_buf
 					clip_xe = max_clip_x;
 				}
 				dx = clip_xe - clip_xs + 1;
-				dzdx = (ze-zs)/dx;
+				dzdx = (ze-zs)/(xe-xs+1);
 				zs += (clip_xs - xs)*dzdx;
 				ixs = clip_xs;
 				for (loopx = 0;loopx<(int)dx;loopx++)
@@ -3136,7 +3145,7 @@ void drawTextureTriangle_zb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_buf
 		}
 		break;
 	case TRI_TYPE_TOP:
-		y31 = 1/(y3-y1);
+  		y31 = 1/(y3-y1);
 		y32 = 1/(y3-y2);
 		dxdyl = (x3-x1)*y31;
 		dxdyr = (x3-x2)*y32;
@@ -3199,17 +3208,21 @@ void drawTextureTriangle_zb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_buf
 				ixs = xs;
 				tx_step = (txe - txs)/dx;
 				ty_step = (tye - tys)/dx;
-				for (loopx = 0;loopx<dx;loopx++)
+				int idx = dx;
+				for (loopx = 0;loopx<idx;loopx++)
 				{
 					current_z = zs + loopx*dzdx;
-					if (current_z < *(lp_zaddr+ixs+loopx))
+					if (current_z < (float)(*(lp_zaddr+ixs+loopx)))
 					{
-						texture_x = (txs + loopx*tx_step)*(texture->width - 1);
-						texture_y = (tys + loopx*ty_step)*(texture->height - 1);
+						texture_x = (int)((txs + loopx*tx_step)*(texture->width - 1));
+						texture_y = (int)((tys + loopx*ty_step)*(texture->height - 1));
 						temp_color = texture->data[(texture_y<<texture->power_of_two)+texture_x];
 						temp_color.r *= light_r;
 						temp_color.g *= light_g;
 						temp_color.b *= light_b;
+						/*char buffer[100];
+						sprintf_s(buffer,"dp=%d/%d/%d     %f/%f/%f",temp_color.r,temp_color.g,temp_color.b,light_r,light_r,light_r);
+						MessageBox(NULL,buffer,"ddd",MB_OK);*/
 						final_color = temp_color.argb;
 						Mem_Set_QUAD(lp_addr+ixs+loopx,final_color,1);
 						*(lp_zaddr+ixs+loopx) = current_z;
@@ -3264,7 +3277,7 @@ void drawTextureTriangle_zb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_buf
 					clip_xe = max_clip_x;
 				}
 				dx = clip_xe - clip_xs + 1;
-				dzdx = (ze-zs)/dx;
+				dzdx = (ze-zs)/(xe-xs+1);
 				zs += (clip_xs - xs)*dzdx;
 				ixs = clip_xs;
 				for (loopx = 0;loopx<(int)dx;loopx++)
@@ -3373,8 +3386,8 @@ void drawTextureTriangle_zb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_buf
 					current_z = zs + loopx*dzdx;
 					if (current_z < *(lp_zaddr+ixs+loopx))
 					{
-						texture_x = (txs + loopx*tx_step)*(texture->width - 1);
-						texture_y = (tys + loopx*ty_step)*(texture->height - 1);
+						texture_x = (int)((txs + loopx*tx_step)*(texture->width - 1));
+						texture_y = (int)((tys + loopx*ty_step)*(texture->height - 1));
 						temp_color = texture->data[(texture_y<<texture->power_of_two)+texture_x];
 						temp_color.r *= light_r;
 						temp_color.g *= light_g;
@@ -3433,7 +3446,7 @@ void drawTextureTriangle_zb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_buf
 					clip_xe = max_clip_x;
 				}
 				dx = clip_xe - clip_xs + 1;
-				dzdx = (ze-zs)/dx;
+				dzdx = (ze-zs)/(xe-xs+1);
 				zs += (clip_xs - xs)*dzdx;
 				ixs = clip_xs;
 				for (loopx = 0;loopx<(int)dx;loopx++)
@@ -3597,7 +3610,7 @@ void drawTextureTriangle_zb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_buf
 					clip_xe = max_clip_x;
 				}
 				dx = clip_xe - clip_xs + 1;
-				dzdx = (ze-zs)/dx;
+				dzdx = (ze-zs)/(xe-xs+1);
 				zs += (clip_xs - xs)*dzdx;
 				ixs = clip_xs;
 				for (loopx = 0;loopx<(int)dx;loopx++)
@@ -3888,7 +3901,7 @@ void drawTextureTriangle_zb_gouraud(RenderPoly *poly,BitmapData *texture,UCHAR *
 
 				}
 				dx = clip_xe - clip_xs + 1;
-				dzdx = (ze-zs)/dx;
+				dzdx = (ze-zs)/(xe-xs+1);
 				zs += (clip_xs - xs)*dzdx;
 				ixs = clip_xs;
 				for (loopx = 0;loopx<(int)dx;loopx++)
@@ -4009,7 +4022,7 @@ void drawTextureTriangle_zb_gouraud(RenderPoly *poly,BitmapData *texture,UCHAR *
 						temp_color.g *= light_g;
 						temp_color.b *= light_b;
 						final_color = temp_color.argb;
-						Mem_Set_QUAD(lp_addr+ixs+loopx,final_color,1);
+						Mem_Set_QUAD(lp_addr+ixs+loopx,final_color,1); 
 						*(lp_zaddr+ixs+loopx) = current_z;
 					}					
 				}
@@ -4086,7 +4099,7 @@ void drawTextureTriangle_zb_gouraud(RenderPoly *poly,BitmapData *texture,UCHAR *
 
 				}
 				dx = clip_xe - clip_xs + 1;
-				dzdx = (ze-zs)/dx;
+				dzdx = (ze-zs)/(xe-xs+1);
 				zs += (clip_xs - xs)*dzdx;
 				ixs = clip_xs;
 				for (loopx = 0;loopx<(int)dx;loopx++)
@@ -4314,7 +4327,7 @@ void drawTextureTriangle_zb_gouraud(RenderPoly *poly,BitmapData *texture,UCHAR *
 
 				}
 				dx = clip_xe - clip_xs + 1;
-				dzdx = (ze-zs)/dx;
+				dzdx = (ze-zs)/(xe-xs+1);
 				zs += (clip_xs - xs)*dzdx;
 				ixs = clip_xs;
 				for (loopx = 0;loopx<(int)dx;loopx++)
@@ -4528,7 +4541,7 @@ void drawTextureTriangle_zb_gouraud(RenderPoly *poly,BitmapData *texture,UCHAR *
 
 				}
 				dx = clip_xe - clip_xs + 1;
-				dzdx = (ze-zs)/dx;
+				dzdx = (ze-zs)/(xe-xs+1);
 				zs += (clip_xs - xs)*dzdx;
 				ixs = clip_xs;
 				for (loopx = 0;loopx<(int)dx;loopx++)

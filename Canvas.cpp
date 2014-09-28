@@ -319,6 +319,7 @@ void Canvas::render(bool backmove,bool cull){
 				p2 = &(renderpoly_temp->tvlist[1].pos);
 				p3 = &(renderpoly_temp->tvlist[2].pos);
 				if(renderpoly_temp->attr&POLY4D_ATTR_SHADE_MODE_TEXTURE){
+					//drawTextureTriangle(renderpoly_temp,renderpoly_temp->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
 					drawTextureTriangle_zb(renderpoly_temp,renderpoly_temp->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
 				}else{
 					Draw_Triangle_zb(renderpoly_temp,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
@@ -649,11 +650,16 @@ void Canvas::lightObject(Object3d* obj){
 							}						
 							break;
 						case Light::LIGHTV1_ATTR_POINT:
-							dist = point_distance(lp_light->pos,&((lp_poly->lp_vertex_object[lp_poly->v_index_list[0]]).pos));
-							light_dir.build(&((lp_poly->lp_vertex_object[lp_poly->v_index_list[0]]).pos),lp_light->pos);
+							dist = point_distance(lp_light->pos,&((lp_poly->lp_vertex_object[lp_poly->v_index_list[index]]).pos));
+							light_dir.build(&((lp_poly->lp_vertex_object[lp_poly->v_index_list[index]]).pos),lp_light->pos);
 							normalizeVector3d(&light_dir);
 							dp = light_dir.pointMultiply(&((lp_poly->lp_vertex_object[lp_poly->v_index_list[index]]).normal));
 							atten = lp_light->kc + lp_light->kl*dist + lp_light->kq*dist*dist;
+							//MessageBox();
+							//char buffer[100];
+							//sprintf_s(buffer,"dp=%f   %f/%f/%f",dp,(lp_poly->lp_vertex_object[lp_poly->v_index_list[index]]).normal.x,(lp_poly->lp_vertex_object[lp_poly->v_index_list[index]]).normal.y,(lp_poly->lp_vertex_object[lp_poly->v_index_list[index]]).normal.z);
+							//MessageBox(NULL,buffer,"ddd",MB_OK);
+							///////////
 							if (dp>0)
 							{
 								r_light = lp_light->c_specular->r;
@@ -665,7 +671,7 @@ void Canvas::lightObject(Object3d* obj){
 							}						
 							break;
 						case Light::LIGHTV1_ATTR_SPOTLIGHT_SIMPLE:
-							dist = point_distance(lp_light->pos,&((lp_poly->lp_vertex_object[lp_poly->v_index_list[0]]).pos));
+							dist = point_distance(lp_light->pos,&((lp_poly->lp_vertex_object[lp_poly->v_index_list[index]]).pos));
 							light_dir.copy(lp_light->dir);
 							normalizeVector3d(&light_dir);
 							dp = light_dir.pointMultiply(&((lp_poly->lp_vertex_object[lp_poly->v_index_list[index]]).normal));
