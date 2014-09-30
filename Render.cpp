@@ -139,7 +139,7 @@ void Camera::removeBackFaceOfObj(Object3d *obj){
 			continue;
 		}
 		view_vector.build(&(lp_p->lp_vertex_object[lp_p->v_index_list[0]].pos),&pos);
-		lp_p->calculateNormalVector();
+		//lp_p->calculateNormalVector();
 		float temp = view_vector.pointMultiply(&lp_p->normal_vector);
 		if (temp > 0)
 		{

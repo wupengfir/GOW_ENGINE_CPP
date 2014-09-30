@@ -3,6 +3,8 @@
 
 Object3d cube;
 Object3d terrian;
+Object3d p1;
+Object3d p2;
 BitmapData image;
 float cx[8] = {-1,-1,1,1,-1,1,1,-1};
 float cy[8] = {-1,-1,-1,-1,1,1,1,1};
@@ -257,14 +259,15 @@ void main_loop_1(){
 	//drawTextureTriangle(&v1,&v2,&v3,&image,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
 	//lp_canvas->showImage(&image,300,100);
 
-
+	static int yy = 0;
+	p1.rotationY(yy++);
+	p2.rotationY(yy++);
 	lp_canvas->render(true,true);
 
 	lp_canvas->unlock();
 };
 
-Object3d p1;
-Object3d p2;
+
 void init_2(){
 	createLight();
 	Point3d position;
@@ -274,10 +277,14 @@ void init_2(){
 	Matrix rotation(44);
 	float m[16] = {1,0,0,0,0,0,-1,0,0,1,0,0,0,0,0,1};
 	rotation.init(m);
-	loadObject_ASC("cube01.asc",&p1,&position,&scale,NULL,POLY4D_ATTR_SHADE_MODE_GOURAUD);
+	loadObject_COB("model/cube_flat_textured_01.cob",&p1,&position,&scale,NULL,POLY4D_ATTR_SHADE_MODE_TEXTURE|POLY4D_ATTR_SHADE_MODE_GOURAUD,true);
+	BitmapData* texture = new BitmapData();
+	loadBitmapImage(texture,"img/wood02.bmp");
+	p1.setTexture(texture);
+	//loadObject_ASC("model/cube01.asc",&p1,&position,&scale,NULL,POLY4D_ATTR_SHADE_MODE_GOURAUD);
 	position.init(-250,220,500);
 	loadObject_COB("model/sphere_gouraud_textured_02.cob",&p2,&position,&scale,NULL,POLY4D_ATTR_SHADE_MODE_TEXTURE|POLY4D_ATTR_SHADE_MODE_GOURAUD,true);
-	BitmapData* texture = new BitmapData();
+	texture = new BitmapData();
 	loadBitmapImage(texture,"img/tile01.bmp");
 	p2.setTexture(texture);
 	//loadObject_ASC("cube01.asc",&p2,&position,&scale,NULL,POLY4D_ATTR_SHADE_MODE_GOURAUD);

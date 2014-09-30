@@ -638,7 +638,7 @@ void Canvas::lightObject(Object3d* obj){
 							b_sum += b_origin*b_light/256;
 							break;
 						case Light::LIGHTV1_ATTR_INFINITE:
-							dp = lp_light->dir->pointMultiply(&(lp_poly->normal_vector));
+							dp = lp_light->dir->pointMultiply(&((lp_poly->lp_vertex_object[lp_poly->v_index_list[index]]).normal));
 							if (dp>0)
 							{
 								r_light = lp_light->c_diffuse->r;

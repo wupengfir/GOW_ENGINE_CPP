@@ -4,6 +4,14 @@ void transformObject(Object3d* obj,Matrix* m,int type,bool transform_basis,bool 
 	int i = 0;
 	Point3d storage;
 	Vector3d result;
+	for (i = 0;i<obj->num_polys;i++)
+	{
+		if (transform_normal)
+		{
+			m->mulVector3d(&(obj->lp_polys[i].normal_vector),&result);
+			obj->lp_polys[i].normal_vector.copy(&result);
+		}			
+	}
 	switch (type)
 	{
 	case TRANSFORM_LOCAL_ONLY:

@@ -101,7 +101,6 @@ void loadObject_ASC(char* path,Object3d* obj,Point3d* p_pos,Vector3d* p_scale,Ma
 		obj->lp_polys[i].v_index_list[2] = (int)pos_List[i]->z;
 		obj->lp_polys[i].color.argb = 0xffffffff;
 		obj->lp_polys[i].attr = attr;
-
 		////////////////测试纹理，记者删
 		obj->lp_polys[i].lp_texture_position_object = obj->lp_texture_position_list;
 		if (i%2 == 0)
@@ -118,6 +117,11 @@ void loadObject_ASC(char* path,Object3d* obj,Point3d* p_pos,Vector3d* p_scale,Ma
 
 	}
 	computeVertexNormalVector(obj);
+	//放这里是因为computeVertexNormalVector会计算没有化1的法线
+	for (i = 0;i<num_poly;i++)
+	{
+		obj->lp_polys[i].calculateNormalVector();
+	}
 	for (int i = 0;i<vertex_list.size();i++)
 	{
 		delete vertex_list[i];
@@ -295,12 +299,16 @@ void loadObject_COB(char* path,Object3d* obj,Point3d* p_pos,Vector3d* p_scale,Ma
 			obj->lp_polys[i].t_index_list[2] = (int)texture_pos_List[i]->z;
 		}
 		
-
 		obj->lp_polys[i].color.argb = 0xffffffff;
 		obj->lp_polys[i].attr = attr;
 
 	}
 	computeVertexNormalVector(obj);
+	//放这里是因为computeVertexNormalVector会计算没有化1的法线
+	for (i = 0;i<num_poly;i++)
+	{
+		obj->lp_polys[i].calculateNormalVector();
+	}
 	for (int i = 0;i<vertex_list.size();i++)
 	{
 		delete vertex_list[i];
@@ -467,6 +475,11 @@ void loadTerrain(Object3d* obj,int width,int length,int max_height,char* height_
 			}
 		}
 		computeVertexNormalVector(obj);
+		//放这里是因为computeVertexNormalVector会计算没有化1的法线
+		for (int i = 0;i<obj->num_polys;i++)
+		{
+			obj->lp_polys[i].calculateNormalVector();
+		}
 		if (dir)
 		{
 			obj->rotationX(RAD_TO_DEG(dir->x));
@@ -509,7 +522,6 @@ void loadTerrain(Object3d* obj,int width,int length,int max_height,char* height_
 				obj->lp_polys[(i*(height_data.width - 1) + j)*2].t_index_list[0] = i*(height_data.width - 1)*6 + j*6;
 				obj->lp_polys[(i*(height_data.width - 1) + j)*2].t_index_list[1] = i*(height_data.width - 1)*6 + j*6 + 1;
 				obj->lp_polys[(i*(height_data.width - 1) + j)*2].t_index_list[2] = i*(height_data.width - 1)*6 + j*6 + 2;
-
 				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].lp_texture_position_object = obj->lp_texture_position_list;
 				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].t_index_list[0] = i*(height_data.width - 1)*6 + j*6 + 3;
 				obj->lp_polys[(i*(height_data.width - 1) + j)*2 + 1].t_index_list[1] = i*(height_data.width - 1)*6 + j*6 + 4;
