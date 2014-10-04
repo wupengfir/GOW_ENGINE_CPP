@@ -87,6 +87,7 @@ void Canvas::unlock(){
 void Canvas::init(HINSTANCE hinstance,WNDPROC callback,int width,int height,int bpp,int windowed){
 	reset();
 	z_buffer = new ZBuffer(width,height);
+	createAlphaTable();
 	main_instance = hinstance;
 	is_window = windowed;
 	this->bpp = bpp;
@@ -322,8 +323,13 @@ void Canvas::render(bool backmove,bool cull){
 					//drawTextureTriangle(renderpoly_temp,renderpoly_temp->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
 					drawTextureTriangle_zb(renderpoly_temp,renderpoly_temp->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
 				}else{
-					Draw_Triangle_zb(renderpoly_temp,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
-					//Draw_Triangle_2D(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,renderpoly_temp->lit_color[0].argb,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+					if (renderpoly_temp->alpha_mode)
+					{
+						Draw_Triangle_zb_alpha(renderpoly_temp,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width,alpha_table);
+					}else{
+						Draw_Triangle_zb(renderpoly_temp,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
+						//Draw_Triangle_2D(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,renderpoly_temp->lit_color[0].argb,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+					}					
 				}				
 				continue;
 			}
@@ -770,5 +776,19 @@ void ZBuffer::clear(float data){
 	for (int i = 0;i<width*height;i++)
 	{
 		buffer[i] = data;
+	}
+};
+
+void Canvas::createAlphaTable(){
+	int sum = 1024*1024*16;
+	alpha_table = new UINT[sum];
+	Color temp;
+	for (UINT i = 0;i<sum;i++)
+	{
+		temp.argb = i;
+		temp.r *= 0.5;
+		temp.g *= 0.5;
+		temp.b *= 0.5;
+		alpha_table[i] = temp.argb;
 	}
 };

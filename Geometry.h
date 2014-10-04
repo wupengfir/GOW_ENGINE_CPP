@@ -237,6 +237,7 @@ public:
 	Color lit_color[3];
 
 	int matrial_index;
+	bool alpha_mode;
 	float normal_length;
 	float avg_z;
 
@@ -253,6 +254,7 @@ public:
 	Poly(){
 		state = POLY4D_STATE_ACTIVE;
 		attr = 0;
+		alpha_mode = false;
 		lp_texture_position_object = NULL;
 		lp_vertex_object = NULL;
 	}
@@ -304,6 +306,7 @@ public:
 
 	int matrial_index;
 	float normal_length;
+	bool alpha_mode;
 	float avg_z;
 
 	Vector3d normal_vector;
@@ -380,6 +383,8 @@ public:
 	int curr_frame;
 	int num_polys;
 
+	bool alpha_mode;
+
 	Point2d* lp_texture_position_list;
 	BitmapData *texture;
 
@@ -399,7 +404,7 @@ public:
 	int setFrame(int frame);
 	void init(int num_v,int num_p,int num_f);
 	void setTexture(BitmapData* data);
-
+	void setAlphaMode(bool mode);
 	inline void toWorldPosition(int type){
 		if (type == TRANSFORM_LOCAL_TO_TRANS)
 		{
@@ -426,12 +431,6 @@ public:
 		}			
 		return true;
 	};
-
-	//inline void addVertex(Vertex3d *v){
-	//	lp_vertex_local[num_vertices] = *v;
-	//	lp_vertex_trans[num_vertices] = *v;
-	//	num_vertices++;
-	//};
 
 	inline void addPoly(int p1,int p2,int p3){
 		Poly* temp = new Poly;
@@ -499,6 +498,7 @@ public:
 		polys[num_polys].normal_vector = poly->normal_vector;
 		polys[num_polys].avg_z = poly->avg_z;
 		polys[num_polys].texture = poly->texture;
+		polys[num_polys].alpha_mode = poly->alpha_mode;
 		polys[num_polys].lit_color[0] = poly->lit_color[0];
 		polys[num_polys].lit_color[1] = poly->lit_color[1];
 		polys[num_polys].lit_color[2] = poly->lit_color[2];

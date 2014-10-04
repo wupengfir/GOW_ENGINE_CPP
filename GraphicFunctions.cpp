@@ -4569,3 +4569,519 @@ void drawTextureTriangle_zb_gouraud(RenderPoly *poly,BitmapData *texture,UCHAR *
 		break;
 	}
 };
+
+void Draw_Triangle_zb_alpha(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z_buffer,int z_pitch,UINT* alpha_table){
+	Vertex3d data1;
+	Vertex3d data2;
+	Vertex3d data3;
+	Vertex3d *v1;
+	Vertex3d *v2;
+	Vertex3d *v3;
+	float x1,y1,x2,y2,x3,y3,temp_value;
+	float z1,z2,z3;
+	mempitch>>=2;
+	UINT* lp_buffer = (UINT*)dest_buffer;
+	UINT* lp_addr = NULL;
+	float* lp_zbuffer = z_buffer;
+	float* lp_zaddr = NULL;
+	int tri_type = TRI_TYPE_GENERAL;
+	data1.pos = poly->tvlist[0].pos;
+	data2.pos = poly->tvlist[1].pos;
+	data3.pos = poly->tvlist[2].pos;
+	data1.texture_pos =  poly->tvlist[0].texture_pos;
+	data2.texture_pos =  poly->tvlist[1].texture_pos;
+	data3.texture_pos =  poly->tvlist[2].texture_pos;
+	v1 = &data1;
+	v2 = &data2;
+	v3 = &data3;
+	Color final_color;
+	Vertex3d *tv;
+	if(v2->y<v1->y){
+		SWAP(v1,v2,tv); 
+	}
+	if (v3->y<v2->y)
+	{
+		SWAP(v2,v3,tv);
+	}
+	if(v2->y<v1->y){
+		SWAP(v1,v2,tv);
+	}
+	if (FCMP(v2->y,v3->y))
+	{
+		tri_type = TRI_TYPE_BOTTOM;
+		if (v2->x > v3->x)
+		{
+			SWAP(v2,v3,tv);
+		}
+	}
+	if (FCMP(v1->y,v2->y))
+	{
+		tri_type = TRI_TYPE_TOP;
+		if (v1->x > v2->x)
+		{
+			SWAP(v1,v2,tv);
+		}
+	}
+	x1 = v1->x;y1 = v1->y;z1 = v1->z;
+	x2 = v2->x;y2 = v2->y;z2 = v2->z;
+	x3 = v3->x;y3 = v3->y;z3 = v3->z;
+	if (y3<min_clip_y||y1>max_clip_y||
+		(x1<min_clip_x&&x2<min_clip_x&&x3<min_clip_x)||
+		(x1>max_clip_x&&x2>max_clip_x&&x3>max_clip_x))
+	{
+		return;
+	}
+	int iy1,iy3,loopy,loopx,ixs;
+	float dxdyl,dzdyl,dxdyr,dzdyr,dy,xs,xe,dzdx,zs,ze,dx,current_z;
+	switch(tri_type){
+	case TRI_TYPE_BOTTOM:
+		dy = y2-y1;
+		dxdyl = (x2-x1)/dy;
+		dxdyr = (x3-x1)/dy;
+		dzdyl = (z2-z1)/dy;
+		dzdyr = (z3-z1)/dy;
+		xs = x1;
+		xe = x1;
+		zs = z1;
+		ze = z1;
+
+		if (y1<=min_clip_y)
+		{
+			xs += (min_clip_y - y1)*dxdyl;
+			xe += (min_clip_y - y1)*dxdyr;
+			zs += (min_clip_y - y1)*dzdyl;
+			ze += (min_clip_y - y1)*dzdyr;
+			y1 = min_clip_y;
+			iy1 = y1;
+		}else
+		{
+			iy1 = ceil(y1);
+			xs += (iy1 - y1)*dxdyl;
+			xe += (iy1 - y1)*dxdyr;
+			zs += (iy1 - y1)*dzdyl;
+			ze += (iy1 - y1)*dzdyr;
+		}
+		if (y3>=max_clip_y)
+		{
+			y3 = max_clip_y;
+			iy3 = max_clip_y - 1;
+		} 
+		else
+		{
+			iy3 = ceil(y3) - 1;
+		}
+		lp_addr = lp_buffer + ((int)y1)*mempitch;
+		lp_zaddr = lp_zbuffer + ((int)y1)*z_pitch;
+		if(x1>=min_clip_x&&x1<=max_clip_x&&x2>=min_clip_x&&x2<=max_clip_x&&x3>=min_clip_x&&x3<=max_clip_x){
+			for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch,lp_zaddr+=z_pitch)
+			{
+				dx = xe-xs+1;
+				dzdx = (ze-zs)/dx;
+				ixs = xs;
+				for (loopx = 0;loopx<(int)dx;loopx++)
+				{
+					current_z = zs + loopx*dzdx;
+					if (current_z < *(lp_zaddr+ixs+loopx))
+					{
+						final_color.argb = alpha_table[poly->lit_color[0].argb&0x00ffffff] + alpha_table[*(lp_addr+ixs+loopx)&0x00ffffff];
+						Mem_Set_QUAD(lp_addr+ixs+loopx,final_color.argb,1);
+						*(lp_zaddr+ixs+loopx) = current_z;
+					}
+				}
+				xs += dxdyl;
+				xe += dxdyr;
+				zs += dzdyl;
+				ze += dzdyr;
+			}
+		}else{
+			float clip_xs,clip_xe,clip_zs,clip_ze;
+
+			for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch,lp_zaddr+=z_pitch)
+			{
+				clip_xe = xe;
+				clip_xs = xs;
+				clip_ze = ze;
+				clip_zs = zs;
+				xs += dxdyl;
+				xe += dxdyr;
+				zs += dzdyl;
+				ze += dzdyr;
+				if (clip_xe<min_clip_x)
+				{
+					continue;
+				}
+				if (clip_xs>max_clip_x)
+				{
+					continue;
+				}
+				if (clip_xs<min_clip_x)
+				{
+					clip_xs = min_clip_x;
+				}
+				if (clip_xe>max_clip_x)
+				{
+					clip_xe = max_clip_x;
+				}
+				/*dx = xe-xs+1;
+				dzdx = (ze-zs)/dx;
+				zs += (clip_xs - xs)*dzdx;*/
+				dx = clip_xe-clip_xs+1;
+				dzdx = (ze-zs)/(xe-xs+1);
+				zs += (clip_xs - xs)*dzdx;
+				ixs = clip_xs;
+				for (loopx = 0;loopx<(int)dx;loopx++)
+				{
+					current_z = zs + loopx*dzdx;
+					if (current_z < *(lp_zaddr+ixs+loopx))
+					{
+						final_color.argb = alpha_table[poly->lit_color[0].argb&0x00ffffff] + alpha_table[*(lp_addr+ixs+loopx)&0x00ffffff];
+						Mem_Set_QUAD(lp_addr+ixs+loopx,final_color.argb,1);
+						*(lp_zaddr+ixs+loopx) = current_z;
+					}
+				}
+			}
+		}
+		break;
+	case TRI_TYPE_TOP:
+		dxdyl = (x3-x1)/(y3-y1);
+		dxdyr = (x3-x2)/(y3-y2);
+		dzdyl = (z3-z1)/(y3-y1);
+		dzdyr = (z3-z2)/(y3-y2);
+		xs = x1;
+		xe = x2;
+		zs = z1;
+		ze = z2;
+
+		if (y1<=min_clip_y)
+		{
+			xs += (min_clip_y - y1)*dxdyl;
+			xe += (min_clip_y - y1)*dxdyr;
+			zs += (min_clip_y - y1)*dzdyl;
+			ze += (min_clip_y - y1)*dzdyr;
+			y1 = min_clip_y;
+			iy1 = y1;
+		}else
+		{
+			iy1 = ceil(y1);
+			xs += (iy1 - y1)*dxdyl;
+			xe += (iy1 - y1)*dxdyr;
+			zs += (iy1 - y1)*dzdyl;
+			ze += (iy1 - y1)*dzdyr;
+		}
+		if (y3>=max_clip_y)
+		{
+			y3 = max_clip_y;
+			iy3 = max_clip_y - 1;
+		} 
+		else
+		{
+			iy3 = ceil(y3) - 1;
+		}
+		lp_addr = lp_buffer + ((int)y1)*mempitch;
+		lp_zaddr = lp_zbuffer + ((int)y1)*z_pitch;
+		if(x1>=min_clip_x&&x1<=max_clip_x&&x2>=min_clip_x&&x2<=max_clip_x&&x3>=min_clip_x&&x3<=max_clip_x){
+			for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch,lp_zaddr+=z_pitch)
+			{
+				dx = xe-xs+1;
+				dzdx = (ze-zs)/dx;
+				ixs = xs;
+				for (loopx = 0;loopx<(int)dx;loopx++)
+				{
+					current_z = zs + loopx*dzdx;
+					if (current_z < *(lp_zaddr+ixs+loopx))
+					{
+						final_color.argb = alpha_table[poly->lit_color[0].argb&0x00ffffff] + alpha_table[*(lp_addr+ixs+loopx)&0x00ffffff];
+						Mem_Set_QUAD(lp_addr+ixs+loopx,final_color.argb,1);
+						*(lp_zaddr+ixs+loopx) = current_z;
+					}
+				}
+				xs += dxdyl;
+				xe += dxdyr;
+				zs += dzdyl;
+				ze += dzdyr;
+			}
+		}else{
+			float clip_xs,clip_xe,clip_zs,clip_ze;
+
+			for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch,lp_zaddr+=z_pitch)
+			{
+				clip_xe = xe;
+				clip_xs = xs;
+				clip_ze = ze;
+				clip_zs = zs;
+				xs += dxdyl;
+				xe += dxdyr;
+				zs += dzdyl;
+				ze += dzdyr;
+				if (clip_xe<min_clip_x)
+				{
+					continue;
+				}
+				if (clip_xs>max_clip_x)
+				{
+					continue;
+				}
+				if (clip_xs<min_clip_x)
+				{
+					clip_xs = min_clip_x;
+				}
+				if (clip_xe>max_clip_x)
+				{
+					clip_xe = max_clip_x;
+				}
+				/*dx = xe-xs+1;
+				dzdx = (ze-zs)/dx;
+				zs += (clip_xs - xs)*dzdx;*/
+				dx = clip_xe-clip_xs+1;
+				dzdx = (ze-zs)/(xe-xs+1);
+				zs += (clip_xs - xs)*dzdx;
+				ixs = clip_xs;
+				for (loopx = 0;loopx<(int)dx;loopx++)
+				{
+					current_z = zs + loopx*dzdx;
+					if (current_z < *(lp_zaddr+ixs+loopx))
+					{
+						final_color.argb = alpha_table[poly->lit_color[0].argb&0x00ffffff] + alpha_table[*(lp_addr+ixs+loopx)&0x00ffffff];
+						Mem_Set_QUAD(lp_addr+ixs+loopx,final_color.argb,1);
+						*(lp_zaddr+ixs+loopx) = current_z;
+					}
+				}
+			}
+		}
+		break;
+	case TRI_TYPE_GENERAL:
+		float temp[12] = {x1,y1,z1,x2,y2,z2,(y2-y1)*(x3-x1)/(y3-y1)+x1,y2,(y2-y1)*(z3-z1)/(y3-y1)+z1,x3,y3,z3};
+		x1 = temp[0];y1 = temp[1];z1 = temp[2];
+		x2 = temp[3];y2 = temp[4];z2 = temp[5];
+		x3 = temp[6];y3 = temp[7];z3 = temp[8];
+
+		if (x2>x3)
+		{
+			SWAP(x2,x3,temp_value);
+			SWAP(y2,y3,temp_value);
+			SWAP(z2,z3,temp_value);
+		}
+
+		
+		dy = y2-y1;
+		dxdyl = (x2-x1)/dy;
+		dxdyr = (x3-x1)/dy;
+		dzdyl = (z2-z1)/dy;
+		dzdyr = (z3-z1)/dy;
+		xs = x1;
+		xe = x1;
+		zs = z1;
+		ze = z1;
+
+		if (y1<=min_clip_y)
+		{
+			xs += (min_clip_y - y1)*dxdyl;
+			xe += (min_clip_y - y1)*dxdyr;
+			zs += (min_clip_y - y1)*dzdyl;
+			ze += (min_clip_y - y1)*dzdyr;
+			y1 = min_clip_y;
+			iy1 = y1;
+		}else
+		{
+			iy1 = ceil(y1);
+			xs += (iy1 - y1)*dxdyl;
+			xe += (iy1 - y1)*dxdyr;
+			zs += (iy1 - y1)*dzdyl;
+			ze += (iy1 - y1)*dzdyr;
+		}
+		if (y3>=max_clip_y)
+		{
+			y3 = max_clip_y;
+			iy3 = max_clip_y - 1;
+		} 
+		else
+		{
+			iy3 = ceil(y3) - 1;
+		}
+		lp_addr = lp_buffer + ((int)y1)*mempitch;
+		lp_zaddr = lp_zbuffer + ((int)y1)*z_pitch;
+		if(x1>=min_clip_x&&x1<=max_clip_x&&x2>=min_clip_x&&x2<=max_clip_x&&x3>=min_clip_x&&x3<=max_clip_x){
+			for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch,lp_zaddr+=z_pitch)
+			{
+				dx = xe-xs+1;
+				dzdx = (ze-zs)/dx;
+				ixs = xs;
+				for (loopx = 0;loopx<(int)dx;loopx++)
+				{
+					current_z = zs + loopx*dzdx;
+					if (current_z < *(lp_zaddr+ixs+loopx))
+					{
+						final_color.argb = alpha_table[poly->lit_color[0].argb&0x00ffffff] + alpha_table[*(lp_addr+ixs+loopx)&0x00ffffff];
+						Mem_Set_QUAD(lp_addr+ixs+loopx,final_color.argb,1);
+						*(lp_zaddr+ixs+loopx) = current_z;
+					}
+				}
+				xs += dxdyl;
+				xe += dxdyr;
+				zs += dzdyl;
+				ze += dzdyr;
+			}
+		}else{
+			float clip_xs,clip_xe,clip_zs,clip_ze;
+
+			for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch,lp_zaddr+=z_pitch)
+			{
+				clip_xe = xe;
+				clip_xs = xs;
+				clip_ze = ze;
+				clip_zs = zs;
+				xs += dxdyl;
+				xe += dxdyr;
+				zs += dzdyl;
+				ze += dzdyr;
+				if (clip_xe<min_clip_x)
+				{
+					continue;
+				}
+				if (clip_xs>max_clip_x)
+				{
+					continue;
+				}
+				if (clip_xs<min_clip_x)
+				{
+					clip_xs = min_clip_x;
+				}
+				if (clip_xe>max_clip_x)
+				{
+					clip_xe = max_clip_x;
+				}
+				dx = clip_xe-clip_xs+1;
+				dzdx = (ze-zs)/(xe-xs+1);
+				zs += (clip_xs - xs)*dzdx;
+				ixs = clip_xs;
+				for (loopx = 0;loopx<(int)dx;loopx++)
+				{
+					current_z = zs + loopx*dzdx;
+					if (current_z < *(lp_zaddr+ixs+loopx))
+					{
+						final_color.argb = alpha_table[poly->lit_color[0].argb&0x00ffffff] + alpha_table[*(lp_addr+ixs+loopx)&0x00ffffff];
+						Mem_Set_QUAD(lp_addr+ixs+loopx,final_color.argb,1);
+						*(lp_zaddr+ixs+loopx) = current_z;
+					}
+				}
+			}
+		}
+
+		x1 = temp[3];y1 = temp[4];z1 = temp[5];
+		x2 = temp[6];y2 = temp[7];z2 = temp[8];
+		x3 = temp[9];y3 = temp[10];z3 = temp[11];
+		if (x1>x2)
+		{
+			SWAP(x2,x1,temp_value);
+			SWAP(y2,y1,temp_value);
+			SWAP(z2,z1,temp_value);
+		}
+		
+		dxdyl = (x3-x1)/(y3-y1);
+		dxdyr = (x3-x2)/(y3-y2);
+		dzdyl = (z3-z1)/(y3-y1);
+		dzdyr = (z3-z2)/(y3-y2);
+		xs = x1;
+		xe = x2;
+		zs = z1;
+		ze = z2;
+
+		if (y1<=min_clip_y)
+		{
+			xs += (min_clip_y - y1)*dxdyl;
+			xe += (min_clip_y - y1)*dxdyr;
+			zs += (min_clip_y - y1)*dzdyl;
+			ze += (min_clip_y - y1)*dzdyr;
+			y1 = min_clip_y;
+			iy1 = y1;
+		}else
+		{
+			iy1 = ceil(y1);
+			xs += (iy1 - y1)*dxdyl;
+			xe += (iy1 - y1)*dxdyr;
+			zs += (iy1 - y1)*dzdyl;
+			ze += (iy1 - y1)*dzdyr;
+		}
+		if (y3>=max_clip_y)
+		{
+			y3 = max_clip_y;
+			iy3 = max_clip_y - 1;
+		} 
+		else
+		{
+			iy3 = ceil(y3) - 1;
+		}
+		lp_addr = lp_buffer + ((int)y1)*mempitch;
+		lp_zaddr = lp_zbuffer + ((int)y1)*z_pitch;
+		if(x1>=min_clip_x&&x1<=max_clip_x&&x2>=min_clip_x&&x2<=max_clip_x&&x3>=min_clip_x&&x3<=max_clip_x){
+			for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch,lp_zaddr+=z_pitch)
+			{
+				dx = xe-xs+1;
+				dzdx = (ze-zs)/dx;
+				ixs = xs;
+				for (loopx = 0;loopx<(int)dx;loopx++)
+				{
+					current_z = zs + loopx*dzdx;
+					if (current_z < *(lp_zaddr+ixs+loopx))
+					{
+						final_color.argb = alpha_table[poly->lit_color[0].argb&0x00ffffff] + alpha_table[*(lp_addr+ixs+loopx)&0x00ffffff];
+						Mem_Set_QUAD(lp_addr+ixs+loopx,final_color.argb,1);
+						*(lp_zaddr+ixs+loopx) = current_z;
+					}
+				}
+				xs += dxdyl;
+				xe += dxdyr;
+				zs += dzdyl;
+				ze += dzdyr;
+			}
+		}else{
+			float clip_xs,clip_xe,clip_zs,clip_ze;
+
+			for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch,lp_zaddr+=z_pitch)
+			{
+				clip_xe = xe;
+				clip_xs = xs;
+				clip_ze = ze;
+				clip_zs = zs;
+				xs += dxdyl;
+				xe += dxdyr;
+				zs += dzdyl;
+				ze += dzdyr;
+				if (clip_xe<min_clip_x)
+				{
+					continue;
+				}
+				if (clip_xs>max_clip_x)
+				{
+					continue;
+				}
+				if (clip_xs<min_clip_x)
+				{
+					clip_xs = min_clip_x;
+				}
+				if (clip_xe>max_clip_x)
+				{
+					clip_xe = max_clip_x;
+				}
+				/*dx = xe-xs+1;
+				dzdx = (ze-zs)/dx;
+				zs += (clip_xs - xs)*dzdx;*/
+				dx = clip_xe-clip_xs+1;
+				dzdx = (ze-zs)/(xe-xs+1);
+				zs += (clip_xs - xs)*dzdx;
+				ixs = clip_xs;
+				for (loopx = 0;loopx<(int)dx;loopx++)
+				{
+					current_z = zs + loopx*dzdx;
+					if (current_z < *(lp_zaddr+ixs+loopx))
+					{
+						final_color.argb = alpha_table[poly->lit_color[0].argb&0x00ffffff] + alpha_table[*(lp_addr+ixs+loopx)&0x00ffffff];
+						Mem_Set_QUAD(lp_addr+ixs+loopx,final_color.argb,1);
+						*(lp_zaddr+ixs+loopx) = current_z;
+					}
+				}
+			}
+		}
+		break;
+	}
+};

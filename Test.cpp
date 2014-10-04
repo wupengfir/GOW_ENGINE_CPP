@@ -5,6 +5,7 @@ Object3d cube;
 Object3d terrian;
 Object3d p1;
 Object3d p2;
+Object3d p3;
 BitmapData image;
 float cx[8] = {-1,-1,1,1,-1,1,1,-1};
 float cy[8] = {-1,-1,-1,-1,1,1,1,1};
@@ -292,9 +293,13 @@ void init_2(){
 	Point3d temp_pos;
 	temp_pos.init(0,-200,0);
 	loadTerrain(&terrian,5000,5000,1000,"img/height.bmp","img/map.bmp",0xffffffff,&temp_pos,NULL,POLY4D_ATTR_SHADE_MODE_TEXTURE|POLY4D_ATTR_SHADE_MODE_FLAT);
-	lp_canvas->addObject(&terrian);
+	position.init(200,220,500);
+	loadObject_ASC("model/cube01.asc",&p3,&position,&scale,NULL,POLY4D_ATTR_SHADE_MODE_FLAT);
+	//p3.setAlphaMode(true);
+	//lp_canvas->addObject(&terrian);
 	lp_canvas->addObject(&p1);
 	lp_canvas->addObject(&p2);
+	lp_canvas->addObject(&p3);
 };
 
 void main_loop_2(){

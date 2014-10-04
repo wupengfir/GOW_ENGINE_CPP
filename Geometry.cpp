@@ -150,10 +150,21 @@ Matrix::~Matrix(){
 	//delete lp_data;
 };
 
+
+
 Object3d::Object3d(){
 	state = OBJECT_STATE_ACTIVE|OBJECT_STATE_VISIBLE;
+	alpha_mode = false;
 	lp_texture_position_list = NULL;
 };
+
+void Object3d::setAlphaMode(bool mode){
+	alpha_mode = mode;
+	for(int i = 0;i<num_polys;i++){
+		lp_polys[i].alpha_mode = mode;
+	}
+};
+
 
 void Object3d::rotationY(float deg){
 	float rad = DEG_TO_RAD(deg - ry);

@@ -62,6 +62,7 @@ public:
 	Camera* lp_camera;
 	RenderList* renderlist_all;
 	ZBuffer *z_buffer;
+	UINT *alpha_table;
 	std::vector<Object3d*> obj_list;
 	std::vector<RenderList*> renderlist_list;
 	std::vector<Light*> LightList;
@@ -73,6 +74,7 @@ public:
 	void clear();
 	void reset();
 	void getDevice();
+	void createAlphaTable();
 	Canvas(void);
 	~Canvas(void);
 
