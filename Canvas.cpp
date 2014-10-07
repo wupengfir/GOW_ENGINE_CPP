@@ -185,7 +185,7 @@ void Canvas::getDevice(){
 		DD_INIT_STRUCT(ddsd);
 		ddsd.dwFlags = DDSD_CAPS | DDSD_WIDTH | DDSD_HEIGHT;
 		//这里用DDSCAPS_VIDEOMEMORY不会闪烁，用DDSCAPS_SYSTEMMEMORY的话可能会闪烁
-		ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_VIDEOMEMORY;
+		ddsd.ddsCaps.dwCaps = DDSCAPS_OFFSCREENPLAIN | DDSCAPS_SYSTEMMEMORY;
 		ddsd.dwWidth = width;
 		ddsd.dwHeight = height;
 		lp_directdraw->CreateSurface(&ddsd,&lp_back_surface,NULL);
@@ -235,6 +235,7 @@ void Canvas::render(bool backmove,bool cull){
 	Poly* temp;
 	RenderPoly* renderpoly_temp;
 	Point3d* p1;Point3d* p2;Point3d* p3;
+	std::vector<Object3d*> alpha_object_list;
 	for (std::vector<Object3d*>::size_type s = 0;s!=obj_list.size();s++)
 	{
 		obj = obj_list[s];
@@ -248,7 +249,7 @@ void Canvas::render(bool backmove,bool cull){
 			continue;
 		}
 
-		if (backmove)
+		if (backmove&&!(obj->alpha_mode))
 		{
 			lp_camera->removeBackFaceOfObj(obj);
 		}
@@ -256,6 +257,25 @@ void Canvas::render(bool backmove,bool cull){
 		
 		lightObject(obj);//光照放在这里是因为要在世界空间处理光照，下面的函数如果加一个flag控制要不要偏转顶点法线，也可以换位置(现在有了)
 		transformObject(obj,&(lp_camera->mcam),TRANSFORM_TRANS_ONLY,false,false);
+		
+		if (obj->alpha_mode)
+		{
+			alpha_object_list.push_back(obj);
+			continue;
+		}
+
+		for (i = 0;i<obj->num_polys;i++)
+		{
+			temp = obj->lp_polys + i;
+			if(temp != NULL&&temp->avaliable()){
+				temp->calculateAvgZ();
+				renderlist_all->addPoly(temp);
+			}
+		}
+	}
+	for (std::vector<Object3d*>::size_type s = 0;s!=alpha_object_list.size();s++)
+	{
+		obj = alpha_object_list[s];
 		for (i = 0;i<obj->num_polys;i++)
 		{
 			temp = obj->lp_polys + i;
@@ -269,24 +289,8 @@ void Canvas::render(bool backmove,bool cull){
 		//lightObject(obj);//不能放这里，obj都循环完了。。。
 		lp_camera->cameraToPerspective_renderlist(renderlist_all);
 		lp_camera->perspectiveToScreen_renderlist(renderlist_all);
-		//lp_camera->cameraToPerspective_object(obj);
-		//lp_camera->perspectiveToScreen_object(obj);
-		//Poly* temp;
-		//RenderPoly* renderpoly_temp;
-		//Point3d* p1;Point3d* p2;Point3d* p3;
-		//for (i = 0;i<obj->num_polys;i++)
-		//{
-		//	temp = obj->lp_polys + i;
-		//	if(temp != NULL&&temp->avaliable()){
-		//		temp->calculateAvgZ();
-		//		renderlist_all->addPoly(temp);
-		//	}
-		//}
 
-		//暂时先放这里(不行，这不是相机空间了)
-		//clipPolyFromRenderlist(renderlist_all,lp_camera,7);
-
-		quickSort(renderlist_all->lp_polys,0,renderlist_all->num_polys - 1);
+		//quickSort(renderlist_all->lp_polys,0,renderlist_all->num_polys - 1);
 		for (i = 0;i<renderlist_all->num_polys;i++)
 		{
 			renderpoly_temp = renderlist_all->lp_polys[i];
@@ -309,8 +313,13 @@ void Canvas::render(bool backmove,bool cull){
 				p1 = &(renderpoly_temp->tvlist[0].pos);
 				p2 = &(renderpoly_temp->tvlist[1].pos);
 				p3 = &(renderpoly_temp->tvlist[2].pos);
-				Draw_Triangle_zb(renderpoly_temp,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
-				//Draw_Triangle_2D(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,renderpoly_temp->color.argb,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+				if (renderpoly_temp->alpha_mode)
+				{
+					Draw_Triangle_zb_alpha(renderpoly_temp,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width,alpha_table);
+				}else{
+					Draw_Triangle_zb(renderpoly_temp,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
+					//Draw_Triangle_2D(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,renderpoly_temp->lit_color[0].argb,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+				}
 				continue;
 			}
 
@@ -339,17 +348,35 @@ void Canvas::render(bool backmove,bool cull){
 				p2 = &(renderpoly_temp->tvlist[1].pos);
 				p3 = &(renderpoly_temp->tvlist[2].pos);				
 				if(renderpoly_temp->attr&POLY4D_ATTR_SHADE_MODE_TEXTURE){
-					drawTextureTriangle_zb_gouraud(renderpoly_temp,renderpoly_temp->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
+					if (renderpoly_temp->alpha_mode)
+					{
+						drawTextureTriangle_zb_gouraud_alpha(renderpoly_temp,renderpoly_temp->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width,alpha_table);
+					}else{
+						drawTextureTriangle_zb_gouraud(renderpoly_temp,renderpoly_temp->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
+					}
+					
 				}else{
-					Draw_Gouraud_Triangle_zb(renderpoly_temp,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
-					//Draw_Gouraud_Triangle(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,renderpoly_temp->lit_color[0],renderpoly_temp->lit_color[1],renderpoly_temp->lit_color[2],lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+					if (renderpoly_temp->alpha_mode)
+					{
+						Draw_Gouraud_Triangle_zb_alpha(renderpoly_temp,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width,alpha_table);
+					}else{
+						Draw_Gouraud_Triangle_zb(renderpoly_temp,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
+						//Draw_Gouraud_Triangle(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,renderpoly_temp->lit_color[0],renderpoly_temp->lit_color[1],renderpoly_temp->lit_color[2],lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+					}
+					
 				}				
 				continue;
 			}
 			else if (renderpoly_temp->attr&POLY4D_ATTR_SHADE_MODE_TEXTURE)
 			{
-				drawTextureTriangle_zb(renderpoly_temp,renderpoly_temp->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
-				//drawTextureTriangle(renderpoly_temp,renderpoly_temp->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+				if (renderpoly_temp->alpha_mode)
+				{
+					drawTextureTriangle_zb_alpha(renderpoly_temp,renderpoly_temp->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width,alpha_table);
+				}else{
+					drawTextureTriangle_zb(renderpoly_temp,renderpoly_temp->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
+					//drawTextureTriangle(renderpoly_temp,renderpoly_temp->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+				}
+				
 				continue;
 			}
 		}
