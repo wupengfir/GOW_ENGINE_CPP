@@ -60,3 +60,7 @@ void Draw_Triangle_zb_alpha(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,fl
 void Draw_Gouraud_Triangle_zb_alpha(RenderPoly* poly,UCHAR *dest_buffer, int mempitch,float* z_buffer,int z_pitch,UINT* alpha_table);
 void drawTextureTriangle_zb_alpha(RenderPoly *poly,BitmapData *texture,UCHAR *dest_buffer, int mempitch,float* z_buffer,int z_pitch,UINT* alpha_table);
 void drawTextureTriangle_zb_gouraud_alpha(RenderPoly *poly,BitmapData *texture,UCHAR *dest_buffer, int mempitch,float* z_buffer,int z_pitch,UINT* alpha_table);
+
+
+void drawTextureTriangle_invzb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_buffer, int mempitch,float* z_buffer,int z_pitch);
+void drawTextureTriangle_invzb_gouraud(RenderPoly *poly,BitmapData *texture,UCHAR *dest_buffer, int mempitch,float* z_buffer,int z_pitch);

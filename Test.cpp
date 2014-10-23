@@ -262,7 +262,7 @@ void main_loop_1(){
 
 	static int yy = 0;
 	p1.rotationY(yy++);
-	p2.rotationY(yy++);
+	//p2.rotationY(yy++);
 	lp_canvas->render(true,true);
 
 	lp_canvas->unlock();
@@ -278,7 +278,7 @@ void init_2(){
 	Matrix rotation(44);
 	float m[16] = {1,0,0,0,0,0,-1,0,0,1,0,0,0,0,0,1};
 	rotation.init(m);
-	loadObject_COB("model/cube_flat_textured_01.cob",&p1,&position,&scale,NULL,POLY4D_ATTR_SHADE_MODE_TEXTURE|POLY4D_ATTR_SHADE_MODE_GOURAUD,true);
+	loadObject_COB("model/cube_flat_textured_01.cob",&p1,&position,&scale,NULL,POLY4D_ATTR_SHADE_MODE_TEXTURE,true);
 	BitmapData* texture = new BitmapData();
 	loadBitmapImage(texture,"img/wood02.bmp");
 	p1.setTexture(texture);

@@ -249,7 +249,7 @@ void Canvas::render(bool backmove,bool cull){
 			continue;
 		}
 
-		if (backmove&&!(obj->alpha_mode))
+		if (backmove)//&&!(obj->alpha_mode))
 		{
 			lp_camera->removeBackFaceOfObj(obj);
 		}
@@ -286,7 +286,7 @@ void Canvas::render(bool backmove,bool cull){
 		}
 	}
 		clipPolyFromRenderlist(renderlist_all,lp_camera,7);
-		//lightObject(obj);//不能放这里，obj都循环完了。。。
+		//lightRenderlist(renderlist_all);//还没对光做世界到相机变换，暂时不能用
 		lp_camera->cameraToPerspective_renderlist(renderlist_all);
 		lp_camera->perspectiveToScreen_renderlist(renderlist_all);
 
@@ -310,9 +310,6 @@ void Canvas::render(bool backmove,bool cull){
 			
 			if (renderpoly_temp->attr&POLY4D_ATTR_SHADE_MODE_PURE)
 			{
-				p1 = &(renderpoly_temp->tvlist[0].pos);
-				p2 = &(renderpoly_temp->tvlist[1].pos);
-				p3 = &(renderpoly_temp->tvlist[2].pos);
 				if (renderpoly_temp->alpha_mode)
 				{
 					Draw_Triangle_zb_alpha(renderpoly_temp,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width,alpha_table);
@@ -325,9 +322,7 @@ void Canvas::render(bool backmove,bool cull){
 
 			if (renderpoly_temp->attr&POLY4D_ATTR_SHADE_MODE_FLAT)
 			{
-				p1 = &(renderpoly_temp->tvlist[0].pos);
-				p2 = &(renderpoly_temp->tvlist[1].pos);
-				p3 = &(renderpoly_temp->tvlist[2].pos);
+
 				if(renderpoly_temp->attr&POLY4D_ATTR_SHADE_MODE_TEXTURE){
 					//drawTextureTriangle(renderpoly_temp,renderpoly_temp->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
 					drawTextureTriangle_zb(renderpoly_temp,renderpoly_temp->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
@@ -337,16 +332,17 @@ void Canvas::render(bool backmove,bool cull){
 						Draw_Triangle_zb_alpha(renderpoly_temp,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width,alpha_table);
 					}else{
 						Draw_Triangle_zb(renderpoly_temp,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
-						//Draw_Triangle_2D(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,renderpoly_temp->lit_color[0].argb,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
+						/*p1 = &(renderpoly_temp->tvlist[0].pos);
+						p2 = &(renderpoly_temp->tvlist[1].pos);
+						p3 = &(renderpoly_temp->tvlist[2].pos);
+						Draw_Triangle_2D(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,renderpoly_temp->lit_color[0].argb,lp_canvas->lp_backbuffer,lp_canvas->lpitch);*/
 					}					
 				}				
 				continue;
 			}
 			else if (renderpoly_temp->attr&POLY4D_ATTR_SHADE_MODE_GOURAUD)
 			{
-				p1 = &(renderpoly_temp->tvlist[0].pos);
-				p2 = &(renderpoly_temp->tvlist[1].pos);
-				p3 = &(renderpoly_temp->tvlist[2].pos);				
+							
 				if(renderpoly_temp->attr&POLY4D_ATTR_SHADE_MODE_TEXTURE){
 					if (renderpoly_temp->alpha_mode)
 					{
@@ -361,6 +357,9 @@ void Canvas::render(bool backmove,bool cull){
 						Draw_Gouraud_Triangle_zb_alpha(renderpoly_temp,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width,alpha_table);
 					}else{
 						Draw_Gouraud_Triangle_zb(renderpoly_temp,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
+						//p1 = &(renderpoly_temp->tvlist[0].pos);
+						//p2 = &(renderpoly_temp->tvlist[1].pos);
+						//p3 = &(renderpoly_temp->tvlist[2].pos);	
 						//Draw_Gouraud_Triangle(p1->x,p1->y,p2->x,p2->y,p3->x,p3->y,renderpoly_temp->lit_color[0],renderpoly_temp->lit_color[1],renderpoly_temp->lit_color[2],lp_canvas->lp_backbuffer,lp_canvas->lpitch);
 					}
 					
@@ -373,7 +372,7 @@ void Canvas::render(bool backmove,bool cull){
 				{
 					drawTextureTriangle_zb_alpha(renderpoly_temp,renderpoly_temp->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width,alpha_table);
 				}else{
-					drawTextureTriangle_zb(renderpoly_temp,renderpoly_temp->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
+					drawTextureTriangle_invzb(renderpoly_temp,renderpoly_temp->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch,z_buffer->buffer,z_buffer->width);
 					//drawTextureTriangle(renderpoly_temp,renderpoly_temp->texture,lp_canvas->lp_backbuffer,lp_canvas->lpitch);
 				}
 				
