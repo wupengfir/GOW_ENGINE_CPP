@@ -7778,9 +7778,9 @@ void drawTextureTriangle_invzb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_
 		inv_zs = inv_z1;
 		inv_ze = inv_z1;
 		txs_overz = tx1_overz;
-		txe_overz = tx1_overz;
+		txe_overz = tx2_overz;
 		tys_overz = ty1_overz;
-		tye_overz = ty1_overz;
+		tye_overz = ty2_overz;
 		/*txs = tx1;
 		txe = tx2;
 		tys = ty1;
@@ -7967,6 +7967,11 @@ void drawTextureTriangle_invzb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_
 		x1 = temp[0];y1 = temp[1];z1 = temp[2];
 		x2 = temp[3];y2 = temp[4];z2 = temp[5];
 		x3 = temp[6];y3 = temp[7];z3 = temp[8];
+
+
+
+		float invz_after[3] = {inv_z2,inv_z3,inv_z3_orgin};
+		float txy_overz_after[6] = {tx2_overz,ty2_overz,tx3_overz,ty3_overz,tx3_overz_orgin,ty3_overz_orgin};
 		float txy_after[6] = {tx2,ty2,tx3,ty3,txy_orin[4],txy_orin[5]};
 		if (x2>x3)
 		{
@@ -8173,9 +8178,9 @@ void drawTextureTriangle_invzb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_
 		tx1 = txy_after[0];ty1 = txy_after[1];
 		tx2 = txy_after[2];ty2 = txy_after[3];
 		tx3 = txy_after[4];ty3 = txy_after[5];
-		inv_z1 = inv_z2;inv_z2 = inv_z3;inv_z3 = inv_z3_orgin;
-		tx1_overz = tx2_overz;tx2_overz = tx3_overz;tx3_overz = tx3_overz_orgin;
-		ty1_overz = ty2_overz;ty2_overz = ty3_overz;ty3_overz = ty3_overz_orgin;
+		inv_z1 = invz_after[0];inv_z2 = invz_after[1];inv_z3 = invz_after[2];
+		tx1_overz = txy_overz_after[0];tx2_overz = txy_overz_after[2];tx3_overz = txy_overz_after[4];
+		ty1_overz = txy_overz_after[1];ty2_overz = txy_overz_after[3];ty3_overz = txy_overz_after[5];
 		if (x1>x2)
 		{
 			SWAP(x2,x1,temp_value);
@@ -8212,9 +8217,9 @@ void drawTextureTriangle_invzb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_
 		inv_zs = inv_z1;
 		inv_ze = inv_z1;
 		txs_overz = tx1_overz;
-		txe_overz = tx1_overz;
+		txe_overz = tx2_overz;
 		tys_overz = ty1_overz;
-		tye_overz = ty1_overz;
+		tye_overz = ty2_overz;
 		/*txs = tx1;
 		txe = tx2;
 		tys = ty1;
