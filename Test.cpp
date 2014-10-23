@@ -302,10 +302,10 @@ void init_2(){
 
 	p3.setAlphaMode(true);
 	//p1.setAlphaMode(true);
-	//lp_canvas->addObject(&terrian);
-	//lp_canvas->addObject(&p3);
+	lp_canvas->addObject(&terrian);
+	lp_canvas->addObject(&p3);
 	lp_canvas->addObject(&p1);
-	//lp_canvas->addObject(&p2);
+	lp_canvas->addObject(&p2);
 };
 
 void main_loop_2(){

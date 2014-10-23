@@ -7686,6 +7686,7 @@ void drawTextureTriangle_invzb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_
 			float clip_xs,clip_xe,clip_zs,clip_ze,clip_txs_overz,clip_tys_overz,clip_inv_zs;
 			for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch,lp_zaddr+=z_pitch)
 			{
+				dx = xe - xs + 1;
 				clip_xe = xe;
 				clip_xs = xs;
 				clip_ze = ze;
@@ -7776,7 +7777,7 @@ void drawTextureTriangle_invzb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_
 		zs = z1;
 		ze = z2;
 		inv_zs = inv_z1;
-		inv_ze = inv_z1;
+		inv_ze = inv_z2;
 		txs_overz = tx1_overz;
 		txe_overz = tx2_overz;
 		tys_overz = ty1_overz;
@@ -7953,7 +7954,6 @@ void drawTextureTriangle_invzb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_
 
 
 		float temp[12] = {x1,y1,z1,x2,y2,z2,(y2-y1)*(x3-x1)/(y3-y1)+x1,y2,(y2-y1)*(z3-z1)/(y3-y1)+z1,x3,y3,z3};
-		float txy_orin[6] = {tx1,ty1,tx2,ty2,tx3,ty3};
 		float inv_z3_orgin = inv_z3;
 		float tx3_overz_orgin = tx3_overz;
 		float ty3_overz_orgin = ty3_overz;
@@ -7962,8 +7962,7 @@ void drawTextureTriangle_invzb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_
 		inv_z3 = (y2-y1)*(inv_z3-inv_z1)/(y3-y1)+inv_z1;
 		tx3_overz = (y2-y1)*(tx3_overz-tx1_overz)/(y3-y1)+tx1_overz;
 		ty3_overz = (y2-y1)*(ty3_overz-ty1_overz)/(y3-y1)+ty1_overz;
-		tx3 = tx3_overz/inv_z3;
-		ty3 = ty3_overz/inv_z3;
+
 		x1 = temp[0];y1 = temp[1];z1 = temp[2];
 		x2 = temp[3];y2 = temp[4];z2 = temp[5];
 		x3 = temp[6];y3 = temp[7];z3 = temp[8];
@@ -7972,7 +7971,6 @@ void drawTextureTriangle_invzb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_
 
 		float invz_after[3] = {inv_z2,inv_z3,inv_z3_orgin};
 		float txy_overz_after[6] = {tx2_overz,ty2_overz,tx3_overz,ty3_overz,tx3_overz_orgin,ty3_overz_orgin};
-		float txy_after[6] = {tx2,ty2,tx3,ty3,txy_orin[4],txy_orin[5]};
 		if (x2>x3)
 		{
 			SWAP(x2,x3,temp_value);
@@ -8107,6 +8105,7 @@ void drawTextureTriangle_invzb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_
 			float clip_xs,clip_xe,clip_zs,clip_ze,clip_txs_overz,clip_tys_overz,clip_inv_zs;
 			for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch,lp_zaddr+=z_pitch)
 			{
+				dx = xe - xs + 1;
 				clip_xe = xe;
 				clip_xs = xs;
 				clip_ze = ze;
@@ -8175,9 +8174,7 @@ void drawTextureTriangle_invzb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_
 		x1 = temp[3];y1 = temp[4];z1 = temp[5];
 		x2 = temp[6];y2 = temp[7];z2 = temp[8];
 		x3 = temp[9];y3 = temp[10];z3 = temp[11];
-		tx1 = txy_after[0];ty1 = txy_after[1];
-		tx2 = txy_after[2];ty2 = txy_after[3];
-		tx3 = txy_after[4];ty3 = txy_after[5];
+
 		inv_z1 = invz_after[0];inv_z2 = invz_after[1];inv_z3 = invz_after[2];
 		tx1_overz = txy_overz_after[0];tx2_overz = txy_overz_after[2];tx3_overz = txy_overz_after[4];
 		ty1_overz = txy_overz_after[1];ty2_overz = txy_overz_after[3];ty3_overz = txy_overz_after[5];
@@ -8188,9 +8185,9 @@ void drawTextureTriangle_invzb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_
 			SWAP(z2,z1,temp_value);
 			SWAP(tx2,tx1,temp_value);
 			SWAP(ty2,ty1,temp_value);
-			SWAP(inv_z2,inv_z3,temp_value);
-			SWAP(tx2_overz,tx3_overz,temp_value);
-			SWAP(ty2_overz,ty3_overz,temp_value);
+			SWAP(inv_z2,inv_z1,temp_value);
+			SWAP(tx2_overz,tx1_overz,temp_value);
+			SWAP(ty2_overz,ty1_overz,temp_value);
 		}
 		y31 = 1/(y3-y1);
 		y32 = 1/(y3-y2);
@@ -8206,16 +8203,16 @@ void drawTextureTriangle_invzb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_
 		dxdyr = (x3-x2)*y32;
 		dzdyl = (z3-z1)*y31;
 		dzdyr = (z3-z2)*y32;
-		dtx_left = (tx3 - tx1)*y31;
-		dty_left = (ty3 - ty1)*y31;
-		dtx_right = (tx3 - tx2)*y32;
-		dty_right = (ty3 - ty2)*y32;
+		//dtx_left = (tx3 - tx1)*y31;
+		//dty_left = (ty3 - ty1)*y31;
+		//dtx_right = (tx3 - tx2)*y32;
+		//dty_right = (ty3 - ty2)*y32;
 		xs = x1;
 		xe = x2;
 		zs = z1;
 		ze = z2;
 		inv_zs = inv_z1;
-		inv_ze = inv_z1;
+		inv_ze = inv_z2;
 		txs_overz = tx1_overz;
 		txe_overz = tx2_overz;
 		tys_overz = ty1_overz;
@@ -8321,6 +8318,7 @@ void drawTextureTriangle_invzb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_
 
 			for (loopy = iy1;loopy<=iy3;loopy++,lp_addr+=mempitch,lp_zaddr+=z_pitch)
 			{
+				dx = xe - xs + 1;
 				clip_xe = xe;
 				clip_xs = xs;
 				clip_ze = ze;
@@ -8328,6 +8326,7 @@ void drawTextureTriangle_invzb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_
 				clip_inv_zs = inv_zs;
 				clip_txs_overz = txs_overz;
 				clip_tys_overz = tys_overz;
+				invz_step = (inv_ze - inv_zs)/dx;
 				tx_step = (txe_overz - txs_overz)/(clip_xe - clip_xs + 1);
 				ty_step = (tye_overz - tys_overz)/(clip_xe - clip_xs + 1);
 				xs += dxdyl;
