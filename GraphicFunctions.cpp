@@ -7890,6 +7890,7 @@ void drawTextureTriangle_invzb(RenderPoly *poly,BitmapData *texture,UCHAR *dest_
 				clip_inv_zs = inv_zs;
 				clip_txs_overz = txs_overz;
 				clip_tys_overz = tys_overz;
+				invz_step = (inv_ze - inv_zs)/(xe - xs + 1);
 				tx_step = (txe_overz - txs_overz)/(clip_xe - clip_xs + 1);
 				ty_step = (tye_overz - tys_overz)/(clip_xe - clip_xs + 1);
 				xs += dxdyl;

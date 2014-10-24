@@ -278,7 +278,7 @@ void init_2(){
 	Matrix rotation(44);
 	float m[16] = {1,0,0,0,0,0,-1,0,0,1,0,0,0,0,0,1};
 	rotation.init(m);
-	loadObject_COB("model/cube_flat_textured_01.cob",&p1,&position,&scale,NULL,POLY4D_ATTR_SHADE_MODE_TEXTURE,true);
+	loadObject_COB("model/cube_flat_textured_01.cob",&p1,&position,&scale,NULL,POLY4D_ATTR_SHADE_MODE_TEXTURE|POLY4D_ATTR_SHADE_MODE_FLAT,true);
 	BitmapData* texture = new BitmapData();
 	loadBitmapImage(texture,"img/wood02.bmp");
 	p1.setTexture(texture);
@@ -303,9 +303,9 @@ void init_2(){
 	p3.setAlphaMode(true);
 	//p1.setAlphaMode(true);
 	lp_canvas->addObject(&terrian);
-	lp_canvas->addObject(&p3);
-	lp_canvas->addObject(&p1);
+	lp_canvas->addObject(&p3);	
 	lp_canvas->addObject(&p2);
+	lp_canvas->addObject(&p1);
 };
 
 void main_loop_2(){
