@@ -295,7 +295,7 @@ void init_2(){
 	loadTerrain(&terrian,5000,5000,1000,"img/height.bmp","img/map.bmp",0xffffffff,&temp_pos,NULL,POLY4D_ATTR_SHADE_MODE_TEXTURE|POLY4D_ATTR_SHADE_MODE_FLAT);
 	position.init(200,220,500);
 	//loadObject_ASC("model/cube01.asc",&p3,&position,&scale,NULL,POLY4D_ATTR_SHADE_MODE_FLAT);
-	loadObject_COB("model/cube_flat_textured_01.cob",&p3,&position,&scale,NULL,POLY4D_ATTR_SHADE_MODE_TEXTURE|POLY4D_ATTR_SHADE_MODE_GOURAUD,true);
+	loadObject_COB("model/cube_flat_textured_01.cob",&p3,&position,&scale,NULL,POLY4D_ATTR_SHADE_MODE_TEXTURE|POLY4D_ATTR_SHADE_MODE_FLAT,true);
 	texture = new BitmapData();
 	loadBitmapImage(texture,"img/metal04.bmp");
 	p3.setTexture(texture);
